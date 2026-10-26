@@ -5,13 +5,14 @@
  */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ----------------------------------------------------
+  // 1. Cache ALL DOM Elements FIRST (Prevents any TDZ ReferenceErrors)
+  // ----------------------------------------------------
   const ghClient = new window.GitHubClient();
   let currentMode = "new"; // 'new' | 'edit'
   let selectedPhotoFile = null;
 
-  // ----------------------------------------------------
-  // 1. Persistent Login Gate & Authentication Handling
-  // ----------------------------------------------------
+  // Login Gate Elements
   const loginGateOverlay = document.getElementById("loginGateOverlay");
   const adminApp = document.getElementById("adminApp");
   const loginForm = document.getElementById("loginForm");
@@ -22,6 +23,104 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnTogglePassword = document.getElementById("btnTogglePassword");
   const btnLogout = document.getElementById("btnLogout");
 
+  // Mode Switchers
+  const tabNew = document.getElementById("tabModeNew");
+  const tabEdit = document.getElementById("tabModeEdit");
+  const editSelectorSec = document.getElementById("editSelectorSection");
+  const selectPerson = document.getElementById("selectExistingPerson");
+  const btnRefreshRegistry = document.getElementById("btnRefreshRegistry");
+  const btnForceLoadPerson = document.getElementById("btnForceLoadPerson");
+
+  // Form Fields
+  const biodataForm = document.getElementById("biodataForm");
+  const personIdInput = document.getElementById("personId");
+  const fullNameInput = document.getElementById("fullName");
+  const livePermalinkPreview = document.getElementById("livePermalinkPreview");
+  const adminPermalinkDisplay = document.getElementById("adminPermalinkDisplay");
+  const adminQrCanvas = document.getElementById("adminQrCanvas");
+  const photoFileInput = document.getElementById("photoFileInput");
+  const photoPreviewImg = document.getElementById("photoPreviewImg");
+  const existingPhotoPath = document.getElementById("existingPhotoPath");
+  const btnSubmit = document.getElementById("btnSubmitForm");
+  const btnSubmitText = document.getElementById("btnSubmitText");
+  const btnReset = document.getElementById("btnResetForm");
+
+  // Repeaters
+  const btnAddEdu = document.getElementById("btnAddEdu");
+  const eduList = document.getElementById("educationList");
+  const btnAddExp = document.getElementById("btnAddExp");
+  const expList = document.getElementById("experienceList");
+
+  // Sidebar Controls
+  const btnDownloadQr = document.getElementById("btnDownloadQr");
+  const btnCopyLink = document.getElementById("btnCopyLink");
+  const btnTestLiveProfile = document.getElementById("btnTestLiveProfile");
+  const navViewProfileBtn = document.getElementById("navViewProfileBtn");
+
+  // GitHub Settings Modal Elements
+  const settingsModal = document.getElementById("settingsModal");
+  const btnOpenSettings = document.getElementById("btnOpenSettings");
+  const btnCloseSettings = document.getElementById("btnCloseSettingsModal");
+  const btnSaveSettings = document.getElementById("btnSaveGithubSettings");
+  const btnClearToken = document.getElementById("btnClearToken");
+  const ghStatusBadge = document.getElementById("ghStatusBadge");
+
+  const cfgUsername = document.getElementById("cfgUsername");
+  const cfgRepo = document.getElementById("cfgRepo");
+  const cfgBranch = document.getElementById("cfgBranch");
+  const cfgToken = document.getElementById("cfgToken");
+
+  // Progress Modal Elements
+  const progressModal = document.getElementById("progressModal");
+  const progressFooter = document.getElementById("progressFooter");
+  const progressErrorBox = document.getElementById("progressErrorBox");
+  const progressErrorText = document.getElementById("progressErrorText");
+  const progressErrorActions = document.getElementById("progressErrorActions");
+  const btnProgressViewProfile = document.getElementById("btnProgressViewProfile");
+  const btnCloseProgressModal = document.getElementById("btnCloseProgressModal");
+  const btnCloseProgressModalErr = document.getElementById("btnCloseProgressModalErr");
+
+  // Helper to resolve instant photo URL without waiting for GitHub Pages build
+  function resolvePhotoUrl(photoPath) {
+    if (!photoPath) return "assets/photos/demo-aditya.svg";
+    if (photoPath.startsWith("http://") || photoPath.startsWith("https://") || photoPath.startsWith("data:")) {
+      return photoPath;
+    }
+    const cfg = window.APP_CONFIG;
+    return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${photoPath}?t=${Date.now()}`;
+  }
+
+  // ----------------------------------------------------
+  // 2. Live QR Code Generation & Download
+  // ----------------------------------------------------
+  function updateQrCode(id) {
+    try {
+      const cleanId = (id || "demo-person").trim();
+      const permalink = `${window.APP_CONFIG.getBaseUrl()}?id=${encodeURIComponent(cleanId)}`;
+      
+      if (livePermalinkPreview) livePermalinkPreview.textContent = permalink;
+      if (adminPermalinkDisplay) adminPermalinkDisplay.textContent = permalink;
+      if (btnTestLiveProfile) btnTestLiveProfile.href = permalink;
+
+      if (adminQrCanvas && typeof QRCode !== "undefined") {
+        adminQrCanvas.innerHTML = "";
+        new QRCode(adminQrCanvas, {
+          text: permalink,
+          width: 196,
+          height: 196,
+          colorDark: "#0f172a",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        });
+      }
+    } catch (e) {
+      console.warn("QR generation error:", e);
+    }
+  }
+
+  // ----------------------------------------------------
+  // 3. Persistent Authentication Handling
+  // ----------------------------------------------------
   const authConfig = window.APP_CONFIG.adminAuth || { enabled: false };
 
   function checkSession() {
@@ -29,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockDashboard();
       return;
     }
-    // Use localStorage so login persists across page refreshes and tabs!
     const isAuthenticated = localStorage.getItem(authConfig.sessionKey) === "true";
     if (isAuthenticated) {
       unlockDashboard();
@@ -87,96 +185,35 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Check login state immediately
-  checkSession();
-
   // ----------------------------------------------------
-  // 2. Dashboard Logic (Initialized on Unlock)
+  // 4. Dashboard Initialization
   // ----------------------------------------------------
   function initDashboard() {
+    // If pre-configured default token exists and no token saved yet, auto-save
+    if (window.APP_CONFIG.defaultGithubToken && !ghClient.hasToken()) {
+      ghClient.setToken(window.APP_CONFIG.defaultGithubToken);
+    }
+
     checkGitHubConnection();
     loadSettingsIntoModal();
-    updateQrCode(personIdInput.value || "demo-person");
+    updateQrCode(personIdInput ? personIdInput.value : "demo-person");
 
-    const navViewProfileBtn = document.getElementById("navViewProfileBtn");
     if (navViewProfileBtn) {
       navViewProfileBtn.href = window.APP_CONFIG.getBaseUrl();
     }
   }
 
-  // Cache DOM Elements
-  const tabNew = document.getElementById("tabModeNew");
-  const tabEdit = document.getElementById("tabModeEdit");
-  const editSelectorSec = document.getElementById("editSelectorSection");
-  const selectPerson = document.getElementById("selectExistingPerson");
-  const btnRefreshRegistry = document.getElementById("btnRefreshRegistry");
-  const btnForceLoadPerson = document.getElementById("btnForceLoadPerson");
-
-  const personIdInput = document.getElementById("personId");
-  const fullNameInput = document.getElementById("fullName");
-  const livePermalinkPreview = document.getElementById("livePermalinkPreview");
-  const adminPermalinkDisplay = document.getElementById("adminPermalinkDisplay");
-  const adminQrCanvas = document.getElementById("adminQrCanvas");
-  const photoFileInput = document.getElementById("photoFileInput");
-  const photoPreviewImg = document.getElementById("photoPreviewImg");
-  const existingPhotoPath = document.getElementById("existingPhotoPath");
-  const btnSubmit = document.getElementById("btnSubmitForm");
-  const btnSubmitText = document.getElementById("btnSubmitText");
-  const btnReset = document.getElementById("btnResetForm");
-
-  const btnAddEdu = document.getElementById("btnAddEdu");
-  const eduList = document.getElementById("educationList");
-  const btnAddExp = document.getElementById("btnAddExp");
-  const expList = document.getElementById("experienceList");
-
-  const btnDownloadQr = document.getElementById("btnDownloadQr");
-  const btnCopyLink = document.getElementById("btnCopyLink");
-  const btnTestLiveProfile = document.getElementById("btnTestLiveProfile");
-
-  // GitHub Settings Modal Elements
-  const settingsModal = document.getElementById("settingsModal");
-  const btnOpenSettings = document.getElementById("btnOpenSettings");
-  const btnCloseSettings = document.getElementById("btnCloseSettingsModal");
-  const btnSaveSettings = document.getElementById("btnSaveGithubSettings");
-  const btnClearToken = document.getElementById("btnClearToken");
-  const ghStatusBadge = document.getElementById("ghStatusBadge");
-
-  const cfgUsername = document.getElementById("cfgUsername");
-  const cfgRepo = document.getElementById("cfgRepo");
-  const cfgBranch = document.getElementById("cfgBranch");
-  const cfgToken = document.getElementById("cfgToken");
-
-  // Progress Modal Elements
-  const progressModal = document.getElementById("progressModal");
-  const progressFooter = document.getElementById("progressFooter");
-  const progressErrorBox = document.getElementById("progressErrorBox");
-  const progressErrorText = document.getElementById("progressErrorText");
-  const progressErrorActions = document.getElementById("progressErrorActions");
-  const btnProgressViewProfile = document.getElementById("btnProgressViewProfile");
-  const btnCloseProgressModal = document.getElementById("btnCloseProgressModal");
-  const btnCloseProgressModalErr = document.getElementById("btnCloseProgressModalErr");
-
-  // Helper to resolve instant photo URL without waiting for GitHub Pages build
-  function resolvePhotoUrl(photoPath) {
-    if (!photoPath) return "assets/photos/demo-aditya.svg";
-    if (photoPath.startsWith("http://") || photoPath.startsWith("https://") || photoPath.startsWith("data:")) {
-      return photoPath;
-    }
-    const cfg = window.APP_CONFIG;
-    return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${photoPath}?t=${Date.now()}`;
-  }
-
   // ----------------------------------------------------
-  // Mode Switching (New vs Edit)
+  // 5. Mode Switching (New vs Edit)
   // ----------------------------------------------------
   if (tabNew) {
     tabNew.addEventListener("click", () => {
       currentMode = "new";
       tabNew.classList.add("active");
       tabEdit.classList.remove("active");
-      editSelectorSec.style.display = "none";
-      personIdInput.readOnly = false;
-      btnSubmitText.textContent = "💾 Save & Commit to GitHub";
+      if (editSelectorSec) editSelectorSec.style.display = "none";
+      if (personIdInput) personIdInput.readOnly = false;
+      if (btnSubmitText) btnSubmitText.textContent = "💾 Save & Commit to GitHub";
       resetForm();
     });
   }
@@ -186,110 +223,100 @@ document.addEventListener("DOMContentLoaded", () => {
       currentMode = "edit";
       tabEdit.classList.add("active");
       tabNew.classList.remove("active");
-      editSelectorSec.style.display = "block";
-      btnSubmitText.textContent = "🔄 Update & Commit Changes";
+      if (editSelectorSec) editSelectorSec.style.display = "block";
+      if (btnSubmitText) btnSubmitText.textContent = "🔄 Update & Commit Changes";
       await populateRegistryDropdown();
     });
   }
 
   // ----------------------------------------------------
-  // Dynamic Slug / ID Generation
+  // 6. Dynamic Slug / ID Generation
   // ----------------------------------------------------
-  fullNameInput.addEventListener("input", () => {
-    if (currentMode === "new" && !personIdInput.dataset.manuallyEdited) {
-      const slug = fullNameInput.value
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      personIdInput.value = slug;
-      updateQrCode(slug || "demo-person");
-    }
-  });
-
-  personIdInput.addEventListener("input", () => {
-    personIdInput.dataset.manuallyEdited = "true";
-    updateQrCode(personIdInput.value.trim() || "demo-person");
-  });
-
-  // ----------------------------------------------------
-  // Photo File Selection & Live Preview
-  // ----------------------------------------------------
-  photoFileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      selectedPhotoFile = file;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        photoPreviewImg.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  // ----------------------------------------------------
-  // Live QR Code Generation & Download
-  // ----------------------------------------------------
-  function updateQrCode(id) {
-    const permalink = `${window.APP_CONFIG.getBaseUrl()}?id=${encodeURIComponent(id)}`;
-    
-    livePermalinkPreview.textContent = permalink;
-    adminPermalinkDisplay.textContent = permalink;
-    btnTestLiveProfile.href = permalink;
-
-    if (adminQrCanvas && typeof QRCode !== "undefined") {
-      adminQrCanvas.innerHTML = "";
-      new QRCode(adminQrCanvas, {
-        text: permalink,
-        width: 196,
-        height: 196,
-        colorDark: "#0f172a",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-    }
+  if (fullNameInput) {
+    fullNameInput.addEventListener("input", () => {
+      if (currentMode === "new" && personIdInput && !personIdInput.dataset.manuallyEdited) {
+        const slug = fullNameInput.value
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+        personIdInput.value = slug;
+        updateQrCode(slug || "demo-person");
+      }
+    });
   }
 
-  btnCopyLink.addEventListener("click", () => {
-    const link = adminPermalinkDisplay.textContent;
-    navigator.clipboard.writeText(link).then(() => {
-      showToast("Permanent URL copied to clipboard!", "success");
+  if (personIdInput) {
+    personIdInput.addEventListener("input", () => {
+      personIdInput.dataset.manuallyEdited = "true";
+      updateQrCode(personIdInput.value.trim() || "demo-person");
     });
-  });
-
-  btnDownloadQr.addEventListener("click", () => {
-    const canvas = adminQrCanvas.querySelector("canvas");
-    const img = adminQrCanvas.querySelector("img");
-    const personId = personIdInput.value.trim() || "qr-code";
-
-    let downloadUrl = "";
-    if (canvas) {
-      downloadUrl = canvas.toDataURL("image/png");
-    } else if (img && img.src) {
-      downloadUrl = img.src;
-    }
-
-    if (!downloadUrl) {
-      showToast("Could not generate QR download image", "error");
-      return;
-    }
-
-    const a = document.createElement("a");
-    a.href = downloadUrl;
-    a.download = `QR-${personId}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    showToast(`Downloaded QR-${personId}.png! Ready for print.`, "success");
-  });
+  }
 
   // ----------------------------------------------------
-  // Dynamic Repeaters (Education & Experience)
+  // 7. Photo Selection & Live Preview
   // ----------------------------------------------------
-  btnAddEdu.addEventListener("click", () => addEducationRow());
-  btnAddExp.addEventListener("click", () => addExperienceRow());
+  if (photoFileInput) {
+    photoFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedPhotoFile = file;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (photoPreviewImg) photoPreviewImg.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (btnCopyLink) {
+    btnCopyLink.addEventListener("click", () => {
+      const link = adminPermalinkDisplay ? adminPermalinkDisplay.textContent : "";
+      if (link) {
+        navigator.clipboard.writeText(link).then(() => {
+          showToast("Permanent URL copied to clipboard!", "success");
+        });
+      }
+    });
+  }
+
+  if (btnDownloadQr) {
+    btnDownloadQr.addEventListener("click", () => {
+      const canvas = adminQrCanvas ? adminQrCanvas.querySelector("canvas") : null;
+      const img = adminQrCanvas ? adminQrCanvas.querySelector("img") : null;
+      const personId = personIdInput ? personIdInput.value.trim() : "qr-code";
+
+      let downloadUrl = "";
+      if (canvas) {
+        downloadUrl = canvas.toDataURL("image/png");
+      } else if (img && img.src) {
+        downloadUrl = img.src;
+      }
+
+      if (!downloadUrl) {
+        showToast("Could not generate QR download image", "error");
+        return;
+      }
+
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `QR-${personId || "biodata"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      showToast(`Downloaded QR-${personId || "biodata"}.png! Ready for print.`, "success");
+    });
+  }
+
+  // ----------------------------------------------------
+  // 8. Dynamic Repeaters (Education & Experience)
+  // ----------------------------------------------------
+  if (btnAddEdu) btnAddEdu.addEventListener("click", () => addEducationRow());
+  if (btnAddExp) btnAddExp.addEventListener("click", () => addExperienceRow());
 
   function addEducationRow(edu = {}) {
+    if (!eduList) return;
     const row = document.createElement("div");
     row.className = "repeater-item";
     row.innerHTML = `
@@ -321,6 +348,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function addExperienceRow(exp = {}) {
+    if (!expList) return;
     const row = document.createElement("div");
     row.className = "repeater-item";
     row.innerHTML = `
@@ -352,9 +380,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
-  // Dropdown for Editing Existing Profiles
+  // 9. Dropdown for Editing Existing Profiles
   // ----------------------------------------------------
   async function populateRegistryDropdown() {
+    if (!selectPerson) return;
     selectPerson.innerHTML = '<option value="">Loading registered persons from GitHub...</option>';
     try {
       const reg = await ghClient.getRegistry();
@@ -367,8 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
           selectPerson.appendChild(opt);
         });
 
-        // If there's only 1 profile or active selection, keep it ready
-        if (selectPerson.options.length === 2) {
+        // Auto-select and load if active or single
+        if (selectPerson.options.length >= 2) {
           selectPerson.selectedIndex = 1;
           await loadSelectedPersonDetails();
         }
@@ -382,6 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadSelectedPersonDetails() {
+    if (!selectPerson) return;
     const id = selectPerson.value;
     if (!id) {
       showToast("Please choose a person from the dropdown first.", "error");
@@ -392,14 +422,16 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(`Loading details for '${id}'...`, "info");
       const profile = await ghClient.getProfileById(id);
       populateFormWithProfile(profile);
-      showToast(`Loaded ${profile.fullName || id}! You can now edit and save.`, "success");
+      showToast(`Loaded ${profile.fullName || id}! Ready to edit.`, "success");
     } catch (err) {
       console.error("Profile load error:", err);
       showToast(`Could not load profile: ${err.message}`, "error");
     }
   }
 
-  selectPerson.addEventListener("change", loadSelectedPersonDetails);
+  if (selectPerson) {
+    selectPerson.addEventListener("change", loadSelectedPersonDetails);
+  }
 
   if (btnRefreshRegistry) {
     btnRefreshRegistry.addEventListener("click", async () => {
@@ -414,37 +446,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function populateFormWithProfile(p) {
-    personIdInput.value = p.id || "";
-    personIdInput.readOnly = true; // Lock ID in edit mode to preserve URL!
-    fullNameInput.value = p.fullName || "";
+    if (!p) return;
+    if (personIdInput) {
+      personIdInput.value = p.id || "";
+      personIdInput.readOnly = true; // Lock ID in edit mode to preserve URL!
+    }
+    if (fullNameInput) fullNameInput.value = p.fullName || "";
     
-    document.getElementById("tagline").value = p.tagline || p.occupation || "";
-    document.getElementById("phone").value = p.phone || "";
-    document.getElementById("whatsapp").value = p.whatsapp || p.phone || "";
-    document.getElementById("email").value = p.email || "";
-    document.getElementById("dob").value = p.dob || "";
-    document.getElementById("gender").value = p.gender || "";
-    document.getElementById("bloodGroup").value = p.bloodGroup || "";
-    document.getElementById("address").value = p.address || "";
-    document.getElementById("about").value = p.about || "";
+    const setVal = (elemId, val) => {
+      const elem = document.getElementById(elemId);
+      if (elem) elem.value = val || "";
+    };
 
-    document.getElementById("skillsInput").value = Array.isArray(p.skills) ? p.skills.join(", ") : "";
-    document.getElementById("languagesInput").value = Array.isArray(p.languages) ? p.languages.join(", ") : "";
+    setVal("tagline", p.tagline || p.occupation || "");
+    setVal("phone", p.phone || "");
+    setVal("whatsapp", p.whatsapp || p.phone || "");
+    setVal("email", p.email || "");
+    setVal("dob", p.dob || "");
+    setVal("gender", p.gender || "");
+    setVal("bloodGroup", p.bloodGroup || "");
+    setVal("address", p.address || "");
+    setVal("about", p.about || "");
 
-    // Photo preview (resolved with raw GitHub URL so it never breaks on ByetHost)
-    existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
-    photoPreviewImg.src = resolvePhotoUrl(p.photo);
+    setVal("skillsInput", Array.isArray(p.skills) ? p.skills.join(", ") : "");
+    setVal("languagesInput", Array.isArray(p.languages) ? p.languages.join(", ") : "");
+
+    // Photo preview (instant raw URL)
+    if (existingPhotoPath) existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
+    if (photoPreviewImg) photoPreviewImg.src = resolvePhotoUrl(p.photo);
     selectedPhotoFile = null;
 
     // Clear and rebuild repeaters
-    eduList.innerHTML = "";
-    if (Array.isArray(p.education)) {
-      p.education.forEach(edu => addEducationRow(edu));
+    if (eduList) {
+      eduList.innerHTML = "";
+      if (Array.isArray(p.education)) {
+        p.education.forEach(edu => addEducationRow(edu));
+      }
     }
 
-    expList.innerHTML = "";
-    if (Array.isArray(p.experience)) {
-      p.experience.forEach(exp => addExperienceRow(exp));
+    if (expList) {
+      expList.innerHTML = "";
+      if (Array.isArray(p.experience)) {
+        p.experience.forEach(exp => addExperienceRow(exp));
+      }
     }
 
     // Refresh QR code
@@ -452,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
-  // Live Progress Modal Checkpoint Controller
+  // 10. Live Progress Modal Checkpoints Controller
   // ----------------------------------------------------
   const stepsMap = {
     validate: document.getElementById("pstep-validate"),
@@ -476,18 +520,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (state === "running") {
       el.classList.add("running");
-      iconEl.innerHTML = '<span class="step-spinner"></span>';
+      if (iconEl) iconEl.innerHTML = '<span class="step-spinner"></span>';
     } else if (state === "done") {
       el.classList.add("done");
-      iconEl.textContent = "✅";
+      if (iconEl) iconEl.textContent = "✅";
     } else if (state === "skipped") {
       el.classList.add("skipped");
-      iconEl.textContent = "⏭️";
+      if (iconEl) iconEl.textContent = "⏭️";
     } else if (state === "error") {
       el.classList.add("error");
-      iconEl.textContent = "❌";
+      if (iconEl) iconEl.textContent = "❌";
     } else {
-      iconEl.textContent = "⚪";
+      if (iconEl) iconEl.textContent = "⚪";
     }
   }
 
@@ -498,124 +542,132 @@ document.addEventListener("DOMContentLoaded", () => {
     setStepState("registry", "pending", "Updating data/registry.json for quick switcher");
     setStepState("qr", "pending", "Permanent URL activated on GitHub Pages");
 
-    progressFooter.style.display = "none";
-    progressErrorBox.style.display = "none";
-    progressErrorActions.style.display = "none";
+    if (progressFooter) progressFooter.style.display = "none";
+    if (progressErrorBox) progressErrorBox.style.display = "none";
+    if (progressErrorActions) progressErrorActions.style.display = "none";
   }
 
   function openProgressModal() {
     resetProgressModal();
-    progressModal.classList.add("open");
+    if (progressModal) progressModal.classList.add("open");
   }
 
   function closeProgressModal() {
-    progressModal.classList.remove("open");
+    if (progressModal) progressModal.classList.remove("open");
   }
 
   if (btnCloseProgressModal) btnCloseProgressModal.addEventListener("click", closeProgressModal);
   if (btnCloseProgressModalErr) btnCloseProgressModalErr.addEventListener("click", closeProgressModal);
 
   // ----------------------------------------------------
-  // Form Submission & Live GitHub Commit Pipeline
+  // 11. Form Submission & GitHub Commit Pipeline
   // ----------------------------------------------------
-  document.getElementById("biodataForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  if (biodataForm) {
+    biodataForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-    const id = personIdInput.value.trim();
-    if (!id) {
-      showToast("Please specify a Unique Person ID.", "error");
-      return;
-    }
-
-    // Check if GitHub PAT is configured
-    if (!ghClient.hasToken()) {
-      settingsModal.classList.add("open");
-      showToast("Please connect your GitHub Personal Access Token first.", "error");
-      return;
-    }
-
-    // Open live progress modal
-    openProgressModal();
-    setStepState("validate", "running", "Validating details...");
-
-    // Prepare Profile Object
-    const profileData = {
-      id: id,
-      fullName: fullNameInput.value.trim(),
-      tagline: document.getElementById("tagline").value.trim(),
-      phone: document.getElementById("phone").value.trim(),
-      whatsapp: document.getElementById("whatsapp").value.trim(),
-      email: document.getElementById("email").value.trim(),
-      dob: document.getElementById("dob").value,
-      gender: document.getElementById("gender").value,
-      bloodGroup: document.getElementById("bloodGroup").value,
-      address: document.getElementById("address").value.trim(),
-      about: document.getElementById("about").value.trim(),
-      photo: existingPhotoPath.value || "assets/photos/demo-aditya.svg",
-      education: collectEducationData(),
-      experience: collectExperienceData(),
-      skills: parseCommaSeparated(document.getElementById("skillsInput").value),
-      languages: parseCommaSeparated(document.getElementById("languagesInput").value),
-      updatedAt: new Date().toISOString().split("T")[0]
-    };
-
-    setStepState("validate", "done", `All particulars verified for '${profileData.fullName}'`);
-
-    // Lock submit button
-    btnSubmit.disabled = true;
-
-    try {
-      // Step-by-step pipeline execution
-      const result = await ghClient.saveProfile(
-        profileData,
-        selectedPhotoFile,
-        (step, status, detail) => {
-          if (step === "photo_process") {
-            setStepState("photo", status, detail);
-          } else if (step === "json_commit") {
-            setStepState("json", status, detail);
-          } else if (step === "registry_sync") {
-            setStepState("registry", status, detail);
-          } else if (step === "qr_ready") {
-            setStepState("qr", status, detail);
-          }
-        }
-      );
-
-      // Finalize UI
-      if (result.photoPath) {
-        existingPhotoPath.value = result.photoPath;
-        photoPreviewImg.src = resolvePhotoUrl(result.photoPath);
+      const id = personIdInput ? personIdInput.value.trim() : "";
+      if (!id) {
+        showToast("Please specify a Unique Person ID.", "error");
+        return;
       }
 
-      setStepState("qr", "done", `Live permanent link: ${result.profileUrl}`);
-      btnProgressViewProfile.href = result.profileUrl;
-      progressFooter.style.display = "block";
+      // Check if GitHub PAT is configured
+      if (!ghClient.hasToken()) {
+        if (settingsModal) settingsModal.classList.add("open");
+        showToast("Please connect your GitHub Personal Access Token first.", "error");
+        return;
+      }
 
-      showToast(`🎉 Success! Biodata for '${profileData.fullName}' committed to GitHub.`, "success");
+      // Open live progress checkpoints modal
+      openProgressModal();
+      setStepState("validate", "running", "Validating details...");
 
-      // Reload dropdown registry in background
-      await populateRegistryDropdown();
-    } catch (err) {
-      console.error("Save error:", err);
-      progressErrorBox.style.display = "block";
-      progressErrorText.textContent = `Commit Failed: ${err.message}`;
-      progressErrorActions.style.display = "block";
-      showToast(`Failed: ${err.message}`, "error");
-    } finally {
-      btnSubmit.disabled = false;
-      btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
-    }
-  });
+      // Prepare Profile Object
+      const getVal = (idStr) => {
+        const el = document.getElementById(idStr);
+        return el ? el.value.trim() : "";
+      };
+
+      const profileData = {
+        id: id,
+        fullName: fullNameInput ? fullNameInput.value.trim() : "",
+        tagline: getVal("tagline"),
+        phone: getVal("phone"),
+        whatsapp: getVal("whatsapp") || getVal("phone"),
+        email: getVal("email"),
+        dob: getVal("dob"),
+        gender: getVal("gender"),
+        bloodGroup: getVal("bloodGroup"),
+        address: getVal("address"),
+        about: getVal("about"),
+        photo: (existingPhotoPath && existingPhotoPath.value) ? existingPhotoPath.value : "assets/photos/demo-aditya.svg",
+        education: collectEducationData(),
+        experience: collectExperienceData(),
+        skills: parseCommaSeparated(getVal("skillsInput")),
+        languages: parseCommaSeparated(getVal("languagesInput")),
+        updatedAt: new Date().toISOString().split("T")[0]
+      };
+
+      setStepState("validate", "done", `All particulars verified for '${profileData.fullName}'`);
+
+      if (btnSubmit) btnSubmit.disabled = true;
+
+      try {
+        const result = await ghClient.saveProfile(
+          profileData,
+          selectedPhotoFile,
+          (step, status, detail) => {
+            if (step === "photo_process") {
+              setStepState("photo", status, detail);
+            } else if (step === "json_commit") {
+              setStepState("json", status, detail);
+            } else if (step === "registry_sync") {
+              setStepState("registry", status, detail);
+            } else if (step === "qr_ready") {
+              setStepState("qr", status, detail);
+            }
+          }
+        );
+
+        if (result.photoPath && existingPhotoPath) {
+          existingPhotoPath.value = result.photoPath;
+          if (photoPreviewImg) photoPreviewImg.src = resolvePhotoUrl(result.photoPath);
+        }
+
+        setStepState("qr", "done", `Live permanent link: ${result.profileUrl}`);
+        if (btnProgressViewProfile) btnProgressViewProfile.href = result.profileUrl;
+        if (progressFooter) progressFooter.style.display = "block";
+
+        showToast(`🎉 Success! Biodata for '${profileData.fullName}' committed to GitHub.`, "success");
+
+        await populateRegistryDropdown();
+      } catch (err) {
+        console.error("Save error:", err);
+        if (progressErrorBox) {
+          progressErrorBox.style.display = "block";
+          if (progressErrorText) progressErrorText.textContent = `Commit Failed: ${err.message}`;
+        }
+        if (progressErrorActions) progressErrorActions.style.display = "block";
+        showToast(`Failed: ${err.message}`, "error");
+      } finally {
+        if (btnSubmit) btnSubmit.disabled = false;
+        if (btnSubmitText) {
+          btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
+        }
+      }
+    });
+  }
 
   function collectEducationData() {
+    if (!eduList) return [];
     const rows = eduList.querySelectorAll(".repeater-item");
     const arr = [];
     rows.forEach(r => {
-      const degree = r.querySelector(".edu-degree").value.trim();
-      const institution = r.querySelector(".edu-institution").value.trim();
-      const year = r.querySelector(".edu-year").value.trim();
-      const score = r.querySelector(".edu-score").value.trim();
+      const degree = r.querySelector(".edu-degree")?.value.trim() || "";
+      const institution = r.querySelector(".edu-institution")?.value.trim() || "";
+      const year = r.querySelector(".edu-year")?.value.trim() || "";
+      const score = r.querySelector(".edu-score")?.value.trim() || "";
       if (degree || institution) {
         arr.push({ degree, institution, year, score });
       }
@@ -624,13 +676,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function collectExperienceData() {
+    if (!expList) return [];
     const rows = expList.querySelectorAll(".repeater-item");
     const arr = [];
     rows.forEach(r => {
-      const role = r.querySelector(".exp-role").value.trim();
-      const company = r.querySelector(".exp-company").value.trim();
-      const duration = r.querySelector(".exp-duration").value.trim();
-      const description = r.querySelector(".exp-desc").value.trim();
+      const role = r.querySelector(".exp-role")?.value.trim() || "";
+      const company = r.querySelector(".exp-company")?.value.trim() || "";
+      const duration = r.querySelector(".exp-duration")?.value.trim() || "";
+      const description = r.querySelector(".exp-desc")?.value.trim() || "";
       if (role || company) {
         arr.push({ role, company, duration, description });
       }
@@ -644,32 +697,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetForm() {
-    document.getElementById("biodataForm").reset();
-    eduList.innerHTML = "";
-    expList.innerHTML = "";
-    existingPhotoPath.value = "assets/photos/demo-aditya.svg";
-    photoPreviewImg.src = "assets/photos/demo-aditya.svg";
+    if (biodataForm) biodataForm.reset();
+    if (eduList) eduList.innerHTML = "";
+    if (expList) expList.innerHTML = "";
+    if (existingPhotoPath) existingPhotoPath.value = "assets/photos/demo-aditya.svg";
+    if (photoPreviewImg) photoPreviewImg.src = "assets/photos/demo-aditya.svg";
     selectedPhotoFile = null;
-    delete personIdInput.dataset.manuallyEdited;
+    if (personIdInput) delete personIdInput.dataset.manuallyEdited;
     updateQrCode("demo-person");
   }
 
-  btnReset.addEventListener("click", resetForm);
+  if (btnReset) btnReset.addEventListener("click", resetForm);
 
   // ----------------------------------------------------
-  // GitHub Settings & Auth Modal
+  // 12. GitHub Settings & Auth Modal
   // ----------------------------------------------------
-  btnOpenSettings.addEventListener("click", () => settingsModal.classList.add("open"));
-  btnCloseSettings.addEventListener("click", () => settingsModal.classList.remove("open"));
+  if (btnOpenSettings) btnOpenSettings.addEventListener("click", () => settingsModal && settingsModal.classList.add("open"));
+  if (btnCloseSettings) btnCloseSettings.addEventListener("click", () => settingsModal && settingsModal.classList.remove("open"));
 
   function loadSettingsIntoModal() {
-    cfgUsername.value = window.APP_CONFIG.githubUsername || "";
-    cfgRepo.value = window.APP_CONFIG.githubRepo || "";
-    cfgBranch.value = window.APP_CONFIG.branch || "main";
-    cfgToken.value = ghClient.getToken() || "";
+    if (cfgUsername) cfgUsername.value = window.APP_CONFIG.githubUsername || "";
+    if (cfgRepo) cfgRepo.value = window.APP_CONFIG.githubRepo || "";
+    if (cfgBranch) cfgBranch.value = window.APP_CONFIG.branch || "main";
+    if (cfgToken) cfgToken.value = ghClient.getToken() || "";
   }
 
   async function checkGitHubConnection() {
+    if (!ghStatusBadge) return;
+
     if (!ghClient.hasToken()) {
       ghStatusBadge.style.background = "rgba(239, 68, 68, 0.15)";
       ghStatusBadge.style.color = "#f87171";
@@ -693,46 +748,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  btnSaveSettings.addEventListener("click", async () => {
-    const username = cfgUsername.value.trim();
-    const repo = cfgRepo.value.trim();
-    const branch = cfgBranch.value.trim() || "main";
-    const token = cfgToken.value.trim();
+  if (btnSaveSettings) {
+    btnSaveSettings.addEventListener("click", async () => {
+      const username = cfgUsername ? cfgUsername.value.trim() : "";
+      const repo = cfgRepo ? cfgRepo.value.trim() : "";
+      const branch = cfgBranch ? cfgBranch.value.trim() : "main";
+      const token = cfgToken ? cfgToken.value.trim() : "";
 
-    if (!username || !repo || !token) {
-      showToast("Username, Repo, and Token are all required.", "error");
-      return;
-    }
+      if (!username || !repo || !token) {
+        showToast("Username, Repo, and Token are all required.", "error");
+        return;
+      }
 
-    ghClient.persistConfig(username, repo, branch);
-    ghClient.setToken(token);
+      ghClient.persistConfig(username, repo, branch);
+      ghClient.setToken(token);
 
-    btnSaveSettings.textContent = "Verifying...";
-    btnSaveSettings.disabled = true;
+      btnSaveSettings.textContent = "Verifying...";
+      btnSaveSettings.disabled = true;
 
-    try {
-      const user = await ghClient.verifyAuth();
-      showToast(`Authenticated as @${user.login}! Settings saved.`, "success");
-      settingsModal.classList.remove("open");
-      await checkGitHubConnection();
-      updateQrCode(personIdInput.value || "demo-person");
-    } catch (err) {
-      showToast(`Verification failed: ${err.message}`, "error");
-    } finally {
-      btnSaveSettings.textContent = "Connect & Verify Token";
-      btnSaveSettings.disabled = false;
-    }
-  });
+      try {
+        const user = await ghClient.verifyAuth();
+        showToast(`Authenticated as @${user.login}! Settings saved.`, "success");
+        if (settingsModal) settingsModal.classList.remove("open");
+        await checkGitHubConnection();
+        updateQrCode(personIdInput ? personIdInput.value : "demo-person");
+      } catch (err) {
+        showToast(`Verification failed: ${err.message}`, "error");
+      } finally {
+        btnSaveSettings.textContent = "Connect & Verify Token";
+        btnSaveSettings.disabled = false;
+      }
+    });
+  }
 
-  btnClearToken.addEventListener("click", () => {
-    ghClient.setToken("");
-    cfgToken.value = "";
-    showToast("GitHub token removed from this device.", "info");
-    checkGitHubConnection();
-  });
+  if (btnClearToken) {
+    btnClearToken.addEventListener("click", () => {
+      ghClient.setToken("");
+      if (cfgToken) cfgToken.value = "";
+      showToast("GitHub token removed from this device.", "info");
+      checkGitHubConnection();
+    });
+  }
 
   function escapeAttr(str) {
     if (typeof str !== "string") return str;
     return str.replace(/"/g, "&quot;");
   }
+
+  // Run initial session check at the very end when all DOM & functions are ready
+  checkSession();
 });

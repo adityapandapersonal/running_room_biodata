@@ -1,6 +1,6 @@
 /**
  * Global Configuration for Biodata QR System
- * Configured for ByetHost Admin + GitHub Sync
+ * Direct GitHub Pages Deployment (Ultra-Fast Global CDN)
  */
 const APP_CONFIG = {
   // 1. GitHub Repository Configuration
@@ -8,8 +8,7 @@ const APP_CONFIG = {
   githubRepo: "running_room_biodata",
   branch: "main",
 
-  // Note: Keep defaultGithubToken empty in public repo to prevent GitHub secret revoking.
-  // The token is entered once in the Admin Studio and stored securely in localStorage.
+  // Token is stored securely in your browser's localStorage and never committed to Git
   defaultGithubToken: "",
 
   // 2. Hardcoded Admin Authentication (Set your desired username & password here)
@@ -17,7 +16,7 @@ const APP_CONFIG = {
     enabled: true,
     username: "aditya",           // <-- You can change this username anytime
     password: "mypassword123",    // <-- You can change this password anytime
-    sessionKey: "byethost_admin_authenticated"
+    sessionKey: "biodata_admin_authenticated"
   },
 
   // Local storage key for storing admin token
