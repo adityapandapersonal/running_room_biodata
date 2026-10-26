@@ -19,16 +19,6 @@
       "photo": "assets/photos/demo-aditya.svg",
       "signature": "assets/signatures/sample-signature.svg",
       "updatedAt": "2026-10-26"
-    },
-    {
-      "id": "dscsdc",
-      "idCardNo": "RR/DGG/737",
-      "fullName": "Aditya Panda",
-      "designation": "Loco Pilot",
-      "phone": "7987099449",
-      "photo": "assets/photos/demo-aditya.svg",
-      "signature": "assets/signatures/sample-signature.svg",
-      "updatedAt": "2026-10-26"
     }
   ]
 }
