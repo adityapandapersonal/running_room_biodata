@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+    <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" rx="200" fill="url(#bgGrad)" />
+  <!-- Body / Shoulders -->
+  <path d="M 80 370 C 90 270, 310 270, 320 370 Z" fill="url(#avatarGrad)" opacity="0.95" />
+  <!-- Head -->
+  <circle cx="200" cy="180" r="75" fill="url(#avatarGrad)" />
+  <!-- Stylish hair -->
+  <path d="M 125 180 C 125 90, 275 90, 275 180 C 255 120, 145 120, 125 180 Z" fill="#1e1b4b" />
+  <!-- Glasses / Modern Accents -->
+  <circle cx="170" cy="180" r="22" fill="none" stroke="#4338ca" stroke-width="6" />
+  <circle cx="230" cy="180" r="22" fill="none" stroke="#4338ca" stroke-width="6" />
+  <line x1="192" y1="180" x2="208" y2="180" stroke="#4338ca" stroke-width="6" />
+  <!-- Smile -->
+  <path d="M 180 220 Q 200 235 220 220" fill="none" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+</svg>

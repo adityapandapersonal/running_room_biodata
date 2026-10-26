@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Verified Digital Biodata & Profile Card with Permanent Dynamic QR Code">
+  <title>Digital Biodata - Verified Profile</title>
+
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <main class="profile-container">
+    <article class="profile-card">
+      <!-- Decorative Banner -->
+      <div class="profile-banner"></div>
+
+      <!-- Profile Header / Hero -->
+      <header class="profile-header">
+        <div class="avatar-wrapper">
+          <img id="profileAvatar" class="avatar-img" src="assets/photos/demo-aditya.svg" alt="Profile Picture">
+        </div>
+
+        <h1 class="profile-name">
+          <span id="profileName">Loading...</span>
+          <span class="verified-icon" title="Verified Profile">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </span>
+        </h1>
+
+        <p class="profile-tagline" id="profileTagline">Digital Biodata Card</p>
+
+        <div class="profile-badges">
+          <span class="badge badge-verified">
+            <span class="pulse-dot"></span> Verified Biodata
+          </span>
+          <span class="badge badge-permanent" id="lastUpdatedDate">Permanent Link</span>
+        </div>
+
+        <!-- Quick Interactive Action Bar -->
+        <nav class="quick-actions" aria-label="Quick Actions">
+          <a id="actionWhatsApp" href="#" class="action-btn whatsapp" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
+            </svg>
+            <span>WhatsApp</span>
+          </a>
+
+          <a id="actionCall" href="#" class="action-btn call">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <span>Call</span>
+          </a>
+
+          <a id="actionEmail" href="#" class="action-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>Email</span>
+          </a>
+
+          <button id="btnShareLink" class="action-btn" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span>Share</span>
+          </button>
+        </nav>
+      </header>
+
+      <!-- Main Profile Content Body -->
+      <div class="profile-body">
+        
+        <!-- About Section -->
+        <section id="sectionAbout">
+          <h2 class="section-title">About Me</h2>
+          <div class="section-content" id="profileAbout"></div>
+        </section>
+
+        <!-- Personal Particulars Grid -->
+        <section id="sectionParticulars">
+          <h2 class="section-title">Personal Particulars</h2>
+          <div class="particulars-grid" id="particularsGrid"></div>
+        </section>
+
+        <!-- Education Timeline -->
+        <section id="sectionEducation">
+          <h2 class="section-title">Education & Qualifications</h2>
+          <div class="timeline" id="educationTimeline"></div>
+        </section>
+
+        <!-- Experience Timeline -->
+        <section id="sectionExperience">
+          <h2 class="section-title">Experience & Career</h2>
+          <div class="timeline" id="experienceTimeline"></div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="sectionSkills">
+          <h2 class="section-title">Skills & Competencies</h2>
+          <div class="tags-wrapper" id="skillsList"></div>
+        </section>
+
+        <!-- Languages Section -->
+        <section id="sectionLanguages">
+          <h2 class="section-title">Languages Known</h2>
+          <div class="tags-wrapper" id="languagesList"></div>
+        </section>
+
+        <!-- Permanent QR Box (Assurance of Dynamic Link) -->
+        <section class="qr-permalink-box">
+          <div class="qr-preview-small" id="profileQrCode"></div>
+          <div class="qr-permalink-details">
+            <div class="qr-permalink-title">Permanent Dynamic QR Code</div>
+            <div class="qr-permalink-note">
+              This QR code is permanently linked to this person. Even if details are updated in the future, this link and QR code remain permanently valid.
+            </div>
+            <a id="profilePermalink" class="permalink-link" href="#" target="_blank"></a>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Footer Bar -->
+      <footer class="profile-footer-bar">
+        <div>🔒 Non-Editable Verified Record</div>
+        <div class="footer-btn-group">
+          <button id="btnPrintPdf" class="btn btn-secondary btn-sm" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Print / Save PDF
+          </button>
+          <a href="admin.html" class="btn btn-secondary btn-sm" title="Admin Portal">
+            ⚙️ Admin
+          </a>
+        </div>
+      </footer>
+    </article>
+  </main>
+
+  <!-- Scripts -->
+  <script src="assets/vendor/qrcode.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/github-api.js"></script>
+  <script src="js/profile.js"></script>
+</body>
+</html>

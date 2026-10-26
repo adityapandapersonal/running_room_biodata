@@ -1,0 +1,13 @@
+{
+  "profiles": [
+    {
+      "id": "demo-aditya",
+      "fullName": "Aditya Panda",
+      "occupation": "Software Engineer & Creator",
+      "phone": "+91 98765 43210",
+      "email": "aditya@example.com",
+      "photo": "assets/photos/demo-aditya.svg",
+      "updatedAt": "2026-10-26"
+    }
+  ]
+}

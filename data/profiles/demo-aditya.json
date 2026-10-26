@@ -1,0 +1,57 @@
+{
+  "id": "demo-aditya",
+  "fullName": "Aditya Panda",
+  "tagline": "Software Engineer & Tech Creator",
+  "dob": "1998-08-15",
+  "gender": "Male",
+  "bloodGroup": "O+",
+  "phone": "+91 98765 43210",
+  "whatsapp": "+91 98765 43210",
+  "email": "aditya.panda@example.com",
+  "address": "Bhubaneswar, Odisha, India",
+  "photo": "assets/photos/demo-aditya.svg",
+  "about": "Passionate developer focused on building scalable web systems, automation, and modern digital applications. Always eager to learn, build, and innovate.",
+  "education": [
+    {
+      "degree": "B.Tech in Computer Science & Engineering",
+      "institution": "National Institute of Technology",
+      "year": "2016 - 2020",
+      "score": "8.8 CGPA"
+    },
+    {
+      "degree": "Higher Secondary (12th Science)",
+      "institution": "DAV Public School",
+      "year": "2014 - 2016",
+      "score": "92%"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Senior Full-Stack Engineer",
+      "company": "Aditya Panda Pvt. Ltd",
+      "duration": "2022 - Present",
+      "description": "Architecting modern web applications, APIs, and AI-driven automation workflows."
+    },
+    {
+      "role": "Software Developer",
+      "company": "Tech Innovations Inc.",
+      "duration": "2020 - 2022",
+      "description": "Engineered responsive client portals, backend microservices, and database models."
+    }
+  ],
+  "skills": [
+    "JavaScript / TypeScript",
+    "Python",
+    "React / Next.js",
+    "Node.js",
+    "Git & Cloud Deployments",
+    "UI/UX Systems"
+  ],
+  "languages": ["English", "Hindi", "Odia"],
+  "socials": {
+    "linkedin": "https://linkedin.com",
+    "github": "https://github.com",
+    "website": "https://example.com"
+  },
+  "updatedAt": "2026-10-26"
+}
