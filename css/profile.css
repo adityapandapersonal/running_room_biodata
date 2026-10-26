@@ -105,8 +105,71 @@
 }
 
 .verified-icon {
-  color: #38bdf8;
+  display: none !important;
+}
+
+/* Exclusive Lead Coder Blue Tick Rosette (Account dscsdc only) */
+.verified-badge-wrapper {
+  position: relative;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  cursor: pointer;
+  margin-left: 8px;
+  line-height: 1;
+}
+
+.verified-badge-wrapper .verified-rosette {
+  width: 24px;
+  height: 24px;
+  display: block;
+  filter: drop-shadow(0 2px 7px rgba(29, 155, 240, 0.55));
+  transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.22s ease;
+}
+
+.verified-badge-wrapper:hover .verified-rosette {
+  transform: scale(1.18);
+  filter: drop-shadow(0 4px 12px rgba(29, 155, 240, 0.85));
+}
+
+.verified-badge-wrapper .badge-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #0f172a;
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+  z-index: 50;
+}
+
+.verified-badge-wrapper .badge-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: #0f172a transparent transparent transparent;
+}
+
+.verified-badge-wrapper:hover .badge-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 .profile-tagline {

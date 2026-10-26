@@ -88,6 +88,26 @@ function renderProfile(p, id) {
 
   // 2. Name & Designation & ID Card No
   setText("profileName", p.fullName || "Unnamed Employee");
+
+  // Exclusive Verified Badge: Hardcoded ONLY for 'dscsdc', zero badge on any other account
+  const badgeContainer = document.getElementById("profileVerifiedBadge");
+  const cleanId = (id || p.id || "").toLowerCase().trim();
+  if (badgeContainer) {
+    if (cleanId === "dscsdc") {
+      badgeContainer.innerHTML = `
+        <span class="verified-badge-wrapper" title="Lead Coder" aria-label="Lead Coder">
+          <svg class="verified-rosette" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path fill="#1d9bf0" d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.67-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.34 2.19c-1.39-.46-2.9-.2-3.91.81s-1.27 2.52-.81 3.91C2.63 9.33 1.75 10.57 1.75 12s.88 2.67 2.19 3.34c-.46 1.39-.2 2.9.81 3.91s2.52 1.27 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.67-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"/>
+            <path fill="#ffffff" d="M9.9 16.75L6.15 13l1.4-1.4 2.35 2.35 6.55-6.55 1.4 1.4-7.95 7.95z"/>
+          </svg>
+          <span class="badge-tooltip">Lead Coder</span>
+        </span>
+      `;
+    } else {
+      badgeContainer.innerHTML = "";
+    }
+  }
+
   const desig = p.designation || p.tagline || p.occupation || "Running Room Employee";
   setText("profileDesignation", desig);
 
