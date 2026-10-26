@@ -156,6 +156,15 @@ document.addEventListener("DOMContentLoaded", () => {
           colorLight: "#ffffff",
           correctLevel: QRCode.CorrectLevel.H
         });
+
+        // Hide duplicate canvas so only the clean <img> renders
+        setTimeout(() => {
+          const cvs = adminQrCanvas.querySelector("canvas");
+          const img = adminQrCanvas.querySelector("img");
+          if (img && img.src && cvs) {
+            cvs.style.display = "none";
+          }
+        }, 30);
       }
     } catch (e) {
       console.warn("QR generation error:", e);

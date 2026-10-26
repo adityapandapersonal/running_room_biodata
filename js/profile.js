@@ -188,96 +188,296 @@ function renderProfile(p, id) {
     };
   }
 
-  // 6. Setup Direct PDF Download Button
+  // 6. Setup Direct Pure Vector PDF Download (From JSON Data - No Screenshots)
   const printBtn = document.getElementById("btnPrintPdf");
   if (printBtn) {
     printBtn.onclick = async () => {
-      const cardEl = document.querySelector(".profile-card");
-      if (!cardEl) return;
+      const originalBtnHtml = printBtn.innerHTML;
+      try {
+        printBtn.innerHTML = `<span>⏳</span> <span>Generating Vector PDF...</span>`;
+        printBtn.disabled = true;
 
-      const rawName = document.getElementById("profileName")?.textContent || "Employee";
-      const cleanName = rawName.trim().replace(/[^a-zA-Z0-9_\-\s]/g, "").replace(/\s+/g, "_") || "Employee";
-      const fileName = `${cleanName}_DGG_Running_Room_Biodata.pdf`;
-
-      // Strictly hide download button and note so they NEVER appear in PDF or print
-      const noPrintEls = document.querySelectorAll("#pdfDownloadBtnWrapper, #pdfDownloadNote, #btnPrintPdf, .no-pdf, .no-print");
-      const prevDisplays = [];
-      noPrintEls.forEach((el, idx) => {
-        prevDisplays[idx] = el.style.display;
-        el.style.setProperty("display", "none", "important");
-      });
-
-      if (typeof html2pdf !== "undefined") {
-        const originalBtnHtml = printBtn.innerHTML;
-
-        // Inlining images as Base64 to prevent canvas cross-origin taint
-        const avatarEl = document.getElementById("profileAvatar");
-        const sigEl = document.getElementById("profileSignature");
-        let origAvatarSrc = null;
-        let origSigSrc = null;
-
-        const inlineImg = (img) => {
-          if (!img || !img.src || img.src.startsWith("data:")) return null;
-          try {
-            const canvas = document.createElement("canvas");
-            canvas.width = img.naturalWidth || img.width || 200;
-            canvas.height = img.naturalHeight || img.height || 200;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const orig = img.src;
-            img.src = canvas.toDataURL("image/png");
-            return orig;
-          } catch (e) {
-            return null;
-          }
-        };
-
-        try {
-          printBtn.innerHTML = `<span>⏳</span> <span>Generating Direct PDF...</span>`;
-          printBtn.disabled = true;
-
-          origAvatarSrc = inlineImg(avatarEl);
-          origSigSrc = inlineImg(sigEl);
-
-          const opt = {
-            margin: [8, 8, 8, 8],
-            filename: fileName,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: {
-              scale: 2,
-              useCORS: true,
-              letterRendering: true,
-              scrollY: 0,
-              scrollX: 0,
-              backgroundColor: "#0b0f19"
-            },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["avoid-all", "css", "legacy"] }
-          };
-
-          await html2pdf().set(opt).from(cardEl).save();
-          showToast(`Direct PDF saved: ${fileName}`, "success");
-        } catch (err) {
-          console.error("Direct PDF generation failed:", err);
-          showToast("Direct save fallback: opening print dialog...", "info");
-          window.print();
-        } finally {
-          if (origAvatarSrc && avatarEl) avatarEl.src = origAvatarSrc;
-          if (origSigSrc && sigEl) sigEl.src = origSigSrc;
-          noPrintEls.forEach((el, idx) => {
-            el.style.display = prevDisplays[idx] || "";
-          });
-          printBtn.innerHTML = originalBtnHtml;
-          printBtn.disabled = false;
-        }
-      } else {
-        // Fallback: window.print (download button is already hidden by @media print)
-        window.print();
-        noPrintEls.forEach((el, idx) => {
-          el.style.display = prevDisplays[idx] || "";
-        });
+        await generateOfficialVectorPdf(p, id);
+        showToast("Official Vector PDF downloaded successfully!", "success");
+      } catch (err) {
+        console.error("Vector PDF generation error:", err);
+        showToast("PDF generation failed: " + err.message, "error");
+      } finally {
+        printBtn.innerHTML = originalBtnHtml;
+        printBtn.disabled = false;
       }
     };
+  }
+}
+
+/**
+ * Pure JavaScript Vector PDF Generator (Zero Screenshots)
+ * Generates an official, crystal-sharp A4 Railway Biodata directly from JSON data.
+ */
+async function generateOfficialVectorPdf(p, id) {
+  const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+  if (!jsPDFClass) {
+    throw new Error("jsPDF library not loaded");
+  }
+
+  const doc = new jsPDFClass({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pw = 210, ph = 297, m = 8;
+  const cw = pw - (m * 2); // 194mm
+
+  // 1. Double Outer Frame Border
+  doc.setDrawColor(15, 23, 42); // Navy
+  doc.setLineWidth(0.6);
+  doc.rect(m, m, cw, ph - (m * 2));
+  doc.setLineWidth(0.2);
+  doc.setDrawColor(148, 163, 184); // Slate
+  doc.rect(m + 1, m + 1, cw - 2, ph - (m * 2) - 2);
+
+  // 2. Header Banner (Navy)
+  doc.setFillColor(15, 23, 42);
+  doc.rect(m + 2, m + 2, cw - 4, 18, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10.5);
+  doc.text("SOUTH EAST CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
+  doc.setFontSize(13);
+  doc.setTextColor(56, 189, 248); // Cyan
+  doc.text("RUNNING ROOM - DONGARGARH (DGG)", pw / 2, m + 14, { align: "center" });
+
+  // 3. Document Title Bar
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(203, 213, 225);
+  doc.rect(m + 2, m + 21, cw - 4, 8, "FD");
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(10.5);
+  doc.setFont("helvetica", "bold");
+  doc.text("EMPLOYEE OFFICIAL BIODATA RECORD", pw / 2, m + 26.5, { align: "center" });
+
+  // 4. Structured Official Particulars Table
+  const tableX = m + 2;
+  let startY = m + 31;
+  const tableW = cw - 4; // 190mm
+  const colL1 = 36;
+  const colV1 = 59;
+  const colL2 = 36;
+  const colV2 = 59; // 36 + 59 + 36 + 59 = 190mm exactly
+
+  function drawRow(label1, val1, label2, val2, height = 7.5) {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+
+    // Col 1: Label
+    doc.setFillColor(248, 250, 252);
+    doc.rect(tableX, startY, colL1, height, "FD");
+    doc.setTextColor(71, 85, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(label1, tableX + 2, startY + (height / 2) + 1.2);
+
+    // Col 2: Value
+    doc.setFillColor(255, 255, 255);
+    doc.rect(tableX + colL1, startY, colV1, height, "FD");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(String(val1 || "-"), tableX + colL1 + 2.5, startY + (height / 2) + 1.2);
+
+    // Col 3: Label
+    doc.setFillColor(248, 250, 252);
+    doc.rect(tableX + colL1 + colV1, startY, colL2, height, "FD");
+    doc.setTextColor(71, 85, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(label2, tableX + colL1 + colV1 + 2, startY + (height / 2) + 1.2);
+
+    // Col 4: Value
+    doc.setFillColor(255, 255, 255);
+    doc.rect(tableX + colL1 + colV1 + colL2, startY, colV2, height, "FD");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(String(val2 || "-"), tableX + colL1 + colV1 + colL2 + 2.5, startY + (height / 2) + 1.2);
+
+    startY += height;
+  }
+
+  function drawFullRow(label, val, height = 8.5) {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+
+    // Label
+    doc.setFillColor(248, 250, 252);
+    doc.rect(tableX, startY, colL1, height, "FD");
+    doc.setTextColor(71, 85, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(label, tableX + 2, startY + (height / 2) + 1.2);
+
+    // Full Value
+    const valWidth = tableW - colL1;
+    doc.setFillColor(255, 255, 255);
+    doc.rect(tableX + colL1, startY, valWidth, height, "FD");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.2);
+    const lines = doc.splitTextToSize(String(val || "-"), valWidth - 5);
+    doc.text(lines, tableX + colL1 + 2.5, startY + 4.5);
+
+    startY += height;
+  }
+
+  // Draw official Running Room particulars
+  const age = calculateAge(p.dob);
+  const dobText = p.dob ? `${formatDateDisplay(p.dob)}${age ? ` (Age: ${age} Yrs)` : ""}` : "-";
+
+  drawRow("ID CARD NO. :-", p.idCardNo || p.id || "-", "Record Status :-", "VERIFIED & ACTIVE");
+  drawRow("Full Name :-", p.fullName || "-", "Designation :-", p.designation || "-");
+  drawRow("Father's Name :-", p.fatherName || "-", "Mother's Name :-", p.motherName || "-");
+  drawRow("Husband's Name :-", p.husbandName || (p.gender === "Female" ? "-" : "N/A"), "Date of Birth :-", dobText);
+  drawRow("Gender :-", p.gender || "-", "Marital Status :-", p.maritalStatus || "-");
+  drawRow("Blood Group :-", p.bloodGroup || "-", "Aadhaar Number :-", p.aadhaarNumber || "-");
+  drawRow("Mobile Number :-", p.mobileNumber || p.phone || "-", "Email ID :-", p.email || "-");
+  drawFullRow("Residential Address :-", p.residentialAddress || p.address || "-", 10);
+  drawRow("Police Verif. Done :-", formatDateDisplay(p.policeVerifDoneDate), "Police Verif. Due :-", formatDateDisplay(p.policeVerifDueDate));
+  drawRow("Medical Exam Done :-", formatDateDisplay(p.medicalExamDoneDate), "Medical Exam Due :-", formatDateDisplay(p.medicalExamDueDate));
+  drawFullRow("Identification Marks :-", p.identificationMarks || "-", 8);
+  drawRow("Date of Joining RR :-", formatDateDisplay(p.joiningDateRR), "Registry Updated :-", p.updatedAt || "Current");
+
+  // Custom Fields (Pencil additions)
+  if (Array.isArray(p.customFields) && p.customFields.length > 0) {
+    for (let i = 0; i < p.customFields.length; i += 2) {
+      const cf1 = p.customFields[i];
+      const cf2 = p.customFields[i + 1];
+      drawRow(
+        (cf1 && cf1.label ? cf1.label + " :-" : "-"), (cf1 ? cf1.value : "-"),
+        (cf2 && cf2.label ? cf2.label + " :-" : "-"), (cf2 ? cf2.value : "-")
+      );
+    }
+  }
+
+  // 5. Bottom Verification & Signature Section
+  const bottomBoxY = startY + 6;
+  const boxH = 46;
+
+  // Left Box: Attestation Banner & QR Code
+  doc.setDrawColor(16, 185, 129);
+  doc.setLineWidth(0.4);
+  doc.setFillColor(240, 253, 244);
+  doc.roundedRect(tableX, bottomBoxY, 92, boxH, 2, 2, "FD");
+
+  doc.setTextColor(5, 150, 105);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.text("DGG Running Room Verified Detailed", tableX + 5, bottomBoxY + 8);
+
+  doc.setTextColor(71, 85, 105);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.text("Official Attestation & Digital Registry Record", tableX + 5, bottomBoxY + 14);
+  doc.text("This biodata record has been officially verified and", tableX + 5, bottomBoxY + 20);
+  doc.text("digitally registered in the Running Room Employee System.", tableX + 5, bottomBoxY + 24);
+  doc.text("SECR Dongargarh (Railway Administration)", tableX + 5, bottomBoxY + 30);
+  doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, tableX + 5, bottomBoxY + 38);
+
+  // Embed Live QR Code
+  const permalink = `${window.APP_CONFIG.getBaseUrl()}?id=${encodeURIComponent(p.id || id || "employee")}`;
+  const qrDataUrl = generateQrDataUrl(permalink);
+  if (qrDataUrl) {
+    try {
+      doc.addImage(qrDataUrl, "PNG", tableX + 66, bottomBoxY + 18, 22, 22);
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Scan to Verify", tableX + 77, bottomBoxY + 43, { align: "center" });
+    } catch (e) {
+      console.warn("Could not embed QR into PDF:", e);
+    }
+  }
+
+  // Right Box: Signature of Employee
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.3);
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(tableX + 96, bottomBoxY, 94, boxH, 2, 2, "FD");
+
+  doc.setTextColor(15, 23, 42);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Signature of Employee :-", tableX + 101, bottomBoxY + 7);
+
+  // Embed Signature Image if present on page
+  const sigImgEl = document.getElementById("profileSignature");
+  const sigDataUrl = getImgDataUrl(sigImgEl);
+  if (sigDataUrl) {
+    try {
+      doc.addImage(sigDataUrl, "PNG", tableX + 118, bottomBoxY + 13, 50, 18);
+    } catch (e) {
+      console.warn("Could not embed signature into PDF:", e);
+    }
+  }
+
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.2);
+  doc.line(tableX + 106, bottomBoxY + 34, tableX + 180, bottomBoxY + 34);
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text("Digitally attested in Running Room Employee Registry", tableX + 101, bottomBoxY + 40);
+
+  // 6. Footer Note
+  doc.setTextColor(148, 163, 184);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.text("Official Document - Running Room Dongargarh (SECR) | Computer Generated Vector PDF Document", pw / 2, ph - 4, { align: "center" });
+
+  // 7. Save File Directly
+  const rawName = p.fullName || "Employee";
+  const cleanName = rawName.trim().replace(/[^a-zA-Z0-9_\-\s]/g, "").replace(/\s+/g, "_") || "Employee";
+  const fileName = `${cleanName}_DGG_Running_Room_Biodata.pdf`;
+  doc.save(fileName);
+}
+
+function generateQrDataUrl(text) {
+  try {
+    if (typeof QRCode === "undefined") return null;
+    const tempDiv = document.createElement("div");
+    tempDiv.style.display = "none";
+    document.body.appendChild(tempDiv);
+    new QRCode(tempDiv, {
+      text: text,
+      width: 160,
+      height: 160,
+      colorDark: "#0f172a",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    const canvas = tempDiv.querySelector("canvas");
+    let dataUrl = null;
+    if (canvas) {
+      dataUrl = canvas.toDataURL("image/png");
+    } else {
+      const img = tempDiv.querySelector("img");
+      if (img && img.src) dataUrl = img.src;
+    }
+    document.body.removeChild(tempDiv);
+    return dataUrl;
+  } catch (e) {
+    console.warn("Could not generate QR dataUrl:", e);
+    return null;
+  }
+}
+
+function getImgDataUrl(imgEl) {
+  if (!imgEl) return null;
+  if (imgEl.src && imgEl.src.startsWith("data:")) return imgEl.src;
+  try {
+    const c = document.createElement("canvas");
+    c.width = imgEl.naturalWidth || imgEl.width || 200;
+    c.height = imgEl.naturalHeight || imgEl.height || 80;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(imgEl, 0, 0, c.width, c.height);
+    return c.toDataURL("image/png");
+  } catch (e) {
+    return null;
   }
 }
 
