@@ -637,8 +637,27 @@
   .profile-header {
     margin-top: 0 !important;
   }
-  .quick-actions, .profile-footer-bar, .toast-container, .no-pdf {
+  .quick-actions, .profile-footer-bar, .toast-container, .no-pdf, .no-print, #pdfDownloadBtnWrapper, #pdfDownloadNote, #btnPrintPdf, .btn-download-pdf {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+  .profile-bottom-action-sec {
+    border-top: none !important;
+    padding-top: 14px !important;
+    margin-top: 14px !important;
+  }
+  .dgg-verified-banner {
+    background: #ecfdf5 !important;
+    border: 1px solid #10b981 !important;
+    color: #065f46 !important;
+    box-shadow: none !important;
+    font-size: 0.9rem !important;
+    padding: 6px 18px !important;
   }
   .particular-item, .timeline-card {
     background: #f8fafc !important;

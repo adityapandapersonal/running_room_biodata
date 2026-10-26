@@ -64,9 +64,9 @@ function renderProfile(p, id) {
   // Helper to resolve instant media URL without waiting for GitHub Pages build delay
   function resolveMediaUrl(path, defaultPath) {
     if (!path) return defaultPath;
-    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
-      return path;
-    }
+    if (path.startsWith("data:")) return path;
+    if (path.startsWith("assets/")) return path;
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
     const cfg = window.APP_CONFIG;
     return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${path}?t=${Date.now()}`;
   }
@@ -199,19 +199,45 @@ function renderProfile(p, id) {
       const cleanName = rawName.trim().replace(/[^a-zA-Z0-9_\-\s]/g, "").replace(/\s+/g, "_") || "Employee";
       const fileName = `${cleanName}_DGG_Running_Room_Biodata.pdf`;
 
+      // Strictly hide download button and note so they NEVER appear in PDF or print
+      const noPrintEls = document.querySelectorAll("#pdfDownloadBtnWrapper, #pdfDownloadNote, #btnPrintPdf, .no-pdf, .no-print");
+      const prevDisplays = [];
+      noPrintEls.forEach((el, idx) => {
+        prevDisplays[idx] = el.style.display;
+        el.style.setProperty("display", "none", "important");
+      });
+
       if (typeof html2pdf !== "undefined") {
-        const noPdfEls = cardEl.querySelectorAll(".no-pdf");
         const originalBtnHtml = printBtn.innerHTML;
+
+        // Inlining images as Base64 to prevent canvas cross-origin taint
+        const avatarEl = document.getElementById("profileAvatar");
+        const sigEl = document.getElementById("profileSignature");
+        let origAvatarSrc = null;
+        let origSigSrc = null;
+
+        const inlineImg = (img) => {
+          if (!img || !img.src || img.src.startsWith("data:")) return null;
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.naturalWidth || img.width || 200;
+            canvas.height = img.naturalHeight || img.height || 200;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const orig = img.src;
+            img.src = canvas.toDataURL("image/png");
+            return orig;
+          } catch (e) {
+            return null;
+          }
+        };
 
         try {
           printBtn.innerHTML = `<span>⏳</span> <span>Generating Direct PDF...</span>`;
           printBtn.disabled = true;
 
-          // Temporarily hide elements not meant for final PDF document
-          noPdfEls.forEach(el => {
-            el.setAttribute("data-prev-display", el.style.display || "");
-            el.style.display = "none";
-          });
+          origAvatarSrc = inlineImg(avatarEl);
+          origSigSrc = inlineImg(sigEl);
 
           const opt = {
             margin: [8, 8, 8, 8],
@@ -233,19 +259,23 @@ function renderProfile(p, id) {
           showToast(`Direct PDF saved: ${fileName}`, "success");
         } catch (err) {
           console.error("Direct PDF generation failed:", err);
-          showToast("Direct save failed, opening print dialog...", "info");
+          showToast("Direct save fallback: opening print dialog...", "info");
           window.print();
         } finally {
-          // Restore non-PDF elements
-          noPdfEls.forEach(el => {
-            el.style.display = el.getAttribute("data-prev-display") || "";
+          if (origAvatarSrc && avatarEl) avatarEl.src = origAvatarSrc;
+          if (origSigSrc && sigEl) sigEl.src = origSigSrc;
+          noPrintEls.forEach((el, idx) => {
+            el.style.display = prevDisplays[idx] || "";
           });
           printBtn.innerHTML = originalBtnHtml;
           printBtn.disabled = false;
         }
       } else {
-        // Fallback if library couldn't be loaded
+        // Fallback: window.print (download button is already hidden by @media print)
         window.print();
+        noPrintEls.forEach((el, idx) => {
+          el.style.display = prevDisplays[idx] || "";
+        });
       }
     };
   }
