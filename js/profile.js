@@ -18,11 +18,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 });
 
+function formatDateDisplay(dateStr) {
+  if (!dateStr || dateStr === "-") return "-";
+  const clean = dateStr.trim();
+  const isoMatch = clean.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (isoMatch) {
+    const yyyy = isoMatch[1];
+    const mm = isoMatch[2].padStart(2, "0");
+    const dd = isoMatch[3].padStart(2, "0");
+    return `${dd}-${mm}-${yyyy}`;
+  }
+  const dmyMatch = clean.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+  if (dmyMatch) {
+    const dd = dmyMatch[1].padStart(2, "0");
+    const mm = dmyMatch[2].padStart(2, "0");
+    const yyyy = dmyMatch[3];
+    return `${dd}-${mm}-${yyyy}`;
+  }
+  return clean;
+}
+
 function calculateAge(dobString) {
   if (!dobString) return "";
-  const dob = new Date(dobString);
-  if (isNaN(dob.getTime())) return "";
-  const diffMs = Date.now() - dob.getTime();
+  let dateObj = null;
+  const parts = dobString.trim().split(/[-/]/);
+  if (parts.length === 3) {
+    if (parts[0].length === 4) {
+      dateObj = new Date(`${parts[0]}-${parts[1].padStart(2, "0")}-${parts[2].padStart(2, "0")}`);
+    } else if (parts[2].length === 4) {
+      dateObj = new Date(`${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`);
+    }
+  } else {
+    dateObj = new Date(dobString);
+  }
+  if (!dateObj || isNaN(dateObj.getTime())) return "";
+  const diffMs = Date.now() - dateObj.getTime();
   const ageDt = new Date(diffMs);
   return Math.abs(ageDt.getUTCFullYear() - 1970);
 }
@@ -69,45 +99,9 @@ function renderProfile(p, id) {
     setText("lastUpdatedDate", `Updated: ${p.updatedAt}`);
   }
 
-  // 3. Quick Action Buttons (WhatsApp & Call)
+  // 3. Phone & Contact
   const phone = p.mobileNumber || p.phone || "";
   const cleanPhone = phone.replace(/[^0-9+]/g, "");
-
-  const callBtn = document.getElementById("actionCall");
-  if (callBtn) {
-    if (cleanPhone) {
-      callBtn.href = `tel:${cleanPhone}`;
-      callBtn.style.display = "inline-flex";
-    } else {
-      callBtn.style.display = "none";
-    }
-  }
-
-  const waBtn = document.getElementById("actionWhatsApp");
-  if (waBtn) {
-    if (cleanPhone) {
-      const waDigits = cleanPhone.replace(/[^0-9]/g, "");
-      waBtn.href = `https://wa.me/${waDigits}?text=Hello%20${encodeURIComponent(p.fullName || "Sir")},%20regarding%20Running%20Room%20Biodata.`;
-      waBtn.style.display = "inline-flex";
-    } else {
-      waBtn.style.display = "none";
-    }
-  }
-
-  const emailBtn = document.getElementById("actionEmail");
-  if (emailBtn) {
-    if (p.email) {
-      emailBtn.href = `mailto:${p.email}`;
-      emailBtn.style.display = "inline-flex";
-    } else {
-      emailBtn.style.display = "none";
-    }
-  }
-
-  const editBtn = document.getElementById("actionEditInAdmin");
-  if (editBtn) {
-    editBtn.href = `admin.html?edit=${encodeURIComponent(id)}`;
-  }
 
   // 4. Fill All Official Running Room Fields
   setText("val_idCardNo", p.idCardNo || p.id || "-");
@@ -117,13 +111,13 @@ function renderProfile(p, id) {
   setText("val_motherName", p.motherName || "-");
   setText("val_husbandName", p.husbandName || (p.gender === "Female" ? "-" : "N/A"));
 
-  // Date of birth with age
-  let dobDisplay = p.dob || "-";
+  // Date of birth with age in DD-MM-YYYY format
+  let dobFormatted = formatDateDisplay(p.dob);
   const age = calculateAge(p.dob);
-  if (age) {
-    dobDisplay += ` (Age: ${age} Years)`;
+  if (age && dobFormatted !== "-") {
+    dobFormatted += ` (Age: ${age} Years)`;
   }
-  setText("val_dob", dobDisplay);
+  setText("val_dob", dobFormatted);
 
   setText("val_gender", p.gender || "-");
   setText("val_maritalStatus", p.maritalStatus || "-");
@@ -153,12 +147,12 @@ function renderProfile(p, id) {
   }
 
   setText("val_residentialAddress", p.residentialAddress || p.address || "-");
-  setText("val_policeVerifDoneDate", p.policeVerifDoneDate || "-");
-  setText("val_policeVerifDueDate", p.policeVerifDueDate || "-");
-  setText("val_medicalExamDoneDate", p.medicalExamDoneDate || "-");
-  setText("val_medicalExamDueDate", p.medicalExamDueDate || "-");
+  setText("val_policeVerifDoneDate", formatDateDisplay(p.policeVerifDoneDate));
+  setText("val_policeVerifDueDate", formatDateDisplay(p.policeVerifDueDate));
+  setText("val_medicalExamDoneDate", formatDateDisplay(p.medicalExamDoneDate));
+  setText("val_medicalExamDueDate", formatDateDisplay(p.medicalExamDueDate));
   setText("val_identificationMarks", p.identificationMarks || "-");
-  setText("val_joiningDateRR", p.joiningDateRR || "-");
+  setText("val_joiningDateRR", formatDateDisplay(p.joiningDateRR));
 
   // 4b. Dynamic Custom Details Added via Pencil in Admin
   const customContainer = document.getElementById("customFieldsContainer");
@@ -194,49 +188,10 @@ function renderProfile(p, id) {
     };
   }
 
-  // 6. Generate Permanent Dynamic QR Code
-  const qrContainer = document.getElementById("profileQrCode");
-  const permalinkUrl = `${window.APP_CONFIG.getBaseUrl()}?id=${encodeURIComponent(id)}`;
-
-  if (qrContainer && typeof QRCode !== "undefined") {
-    qrContainer.innerHTML = "";
-    new QRCode(qrContainer, {
-      text: permalinkUrl,
-      width: 100,
-      height: 100,
-      colorDark: "#0f172a",
-      colorLight: "#ffffff",
-      correctLevel: QRCode.CorrectLevel.H
-    });
-  }
-
-  const permalinkEl = document.getElementById("profilePermalink");
-  if (permalinkEl) {
-    permalinkEl.textContent = permalinkUrl;
-    permalinkEl.href = permalinkUrl;
-  }
-
-  // 7. Setup Share and Print buttons
+  // 6. Setup Print PDF button
   const printBtn = document.getElementById("btnPrintPdf");
   if (printBtn) {
     printBtn.onclick = () => window.print();
-  }
-
-  const shareBtn = document.getElementById("btnShareLink");
-  if (shareBtn) {
-    shareBtn.onclick = () => {
-      if (navigator.share) {
-        navigator.share({
-          title: `${p.fullName || "Employee"} - Running Room Biodata`,
-          text: `Verified Running Room Biodata for ${p.fullName}:`,
-          url: permalinkUrl
-        }).catch(() => {});
-      } else {
-        navigator.clipboard.writeText(permalinkUrl).then(() => {
-          showToast("Permanent Link copied to clipboard!", "success");
-        });
-      }
-    };
   }
 }
 
