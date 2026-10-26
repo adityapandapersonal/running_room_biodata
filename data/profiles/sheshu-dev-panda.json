@@ -24,5 +24,15 @@
   "joiningDateRR": "2021-04-01",
   "photo": "assets/photos/sheshu-dev-panda.webp",
   "signature": "assets/signatures/sample-signature.svg",
+  "customFields": [
+    {
+      "label": "PF Number",
+      "value": "TR/2021/8842"
+    },
+    {
+      "label": "Headquarters / Station",
+      "value": "Dongargarh (SECR)"
+    }
+  ],
   "updatedAt": "2026-10-26"
 }

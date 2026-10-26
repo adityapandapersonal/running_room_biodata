@@ -515,6 +515,7 @@ class GitHubClient {
           joiningDateRR: match.joiningDateRR || "",
           photo: match.photo || "assets/photos/demo-aditya.svg",
           signature: match.signature || "assets/signatures/sample-signature.svg",
+          customFields: match.customFields || [],
           updatedAt: match.updatedAt || ""
         };
         this._profileCache.set(cleanId, fallbackProfile);

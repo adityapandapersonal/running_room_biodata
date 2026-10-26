@@ -104,6 +104,11 @@ function renderProfile(p, id) {
     }
   }
 
+  const editBtn = document.getElementById("actionEditInAdmin");
+  if (editBtn) {
+    editBtn.href = `admin.html?edit=${encodeURIComponent(id)}`;
+  }
+
   // 4. Fill All Official Running Room Fields
   setText("val_idCardNo", p.idCardNo || p.id || "-");
   setText("val_fullName", p.fullName || "-");
@@ -154,6 +159,25 @@ function renderProfile(p, id) {
   setText("val_medicalExamDueDate", p.medicalExamDueDate || "-");
   setText("val_identificationMarks", p.identificationMarks || "-");
   setText("val_joiningDateRR", p.joiningDateRR || "-");
+
+  // 4b. Dynamic Custom Details Added via Pencil in Admin
+  const customContainer = document.getElementById("customFieldsContainer");
+  if (customContainer) {
+    customContainer.innerHTML = "";
+    if (Array.isArray(p.customFields) && p.customFields.length > 0) {
+      p.customFields.forEach(cf => {
+        if (cf && (cf.label || cf.value)) {
+          const row = document.createElement("div");
+          row.className = "rr-biodata-row";
+          row.innerHTML = `
+            <div class="rr-field-label">${escapeHtml(cf.label || "Detail")} :-</div>
+            <div class="rr-field-value">${escapeHtml(cf.value || "-")}</div>
+          `;
+          customContainer.appendChild(row);
+        }
+      });
+    }
+  }
 
   // 5. Signature of Employee Display
   const sigImg = document.getElementById("profileSignature");

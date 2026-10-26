@@ -22,5 +22,15 @@
   "joiningDateRR": "2022-01-10",
   "photo": "assets/photos/demo-aditya.svg",
   "signature": "assets/signatures/sample-signature.svg",
+  "customFields": [
+    {
+      "label": "PF Number",
+      "value": "TR/2022/1001"
+    },
+    {
+      "label": "Station / Division",
+      "value": "Bilaspur Division (SECR)"
+    }
+  ],
   "updatedAt": "2026-10-26"
 }

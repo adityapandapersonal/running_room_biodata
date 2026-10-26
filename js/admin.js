@@ -77,6 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const existingSignaturePath = document.getElementById("existingSignaturePath");
   let selectedSignatureFile = null;
 
+  const btnAddCustomField = document.getElementById("btnAddCustomField");
+  const customFieldsList = document.getElementById("customFieldsList");
+
   const btnSubmit = document.getElementById("btnSubmitForm");
   const btnSubmitText = document.getElementById("btnSubmitText");
   const btnReset = document.getElementById("btnResetForm");
@@ -241,6 +244,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navViewProfileBtn) {
       navViewProfileBtn.href = window.APP_CONFIG.getBaseUrl();
     }
+
+    // Auto-load profile if ?edit=<id> is present in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get("edit");
+    if (editId && tabEdit) {
+      setTimeout(() => {
+        tabEdit.click();
+        setTimeout(() => {
+          if (selectPerson) {
+            selectPerson.value = editId;
+            loadSelectedPersonDetails(editId);
+          }
+        }, 500);
+      }, 200);
+    }
   }
 
   // ----------------------------------------------------
@@ -363,6 +381,54 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         reader.readAsDataURL(file);
       }
+    });
+  }
+
+  // ----------------------------------------------------
+  // 8b. Dynamic Custom Details (Pencil Field Adder)
+  // ----------------------------------------------------
+  function addCustomFieldRow(field = { label: "", value: "" }) {
+    if (!customFieldsList) return;
+    const row = document.createElement("div");
+    row.className = "custom-field-row-item";
+    row.style.cssText = "display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 12px;";
+    
+    row.innerHTML = `
+      <div style="flex: 1.2;">
+        <label style="font-size: 0.76rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">✏️ Detail Heading / Label</label>
+        <input type="text" class="form-control custom-field-label" placeholder="e.g. PF Number, Station, Emergency Contact" value="${escapeAttr(field.label || "")}">
+      </div>
+      <div style="flex: 1.8;">
+        <label style="font-size: 0.76rem; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600;">Value / Detail</label>
+        <input type="text" class="form-control custom-field-val" placeholder="e.g. 5020084321, Bilaspur, 9876543210" value="${escapeAttr(field.value || "")}">
+      </div>
+      <button type="button" class="btn-remove-custom" title="Remove Field" style="margin-top: 22px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 6px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; line-height: 1;">
+        &times;
+      </button>
+    `;
+
+    row.querySelector(".btn-remove-custom").onclick = () => row.remove();
+    customFieldsList.appendChild(row);
+  }
+
+  function collectCustomFields() {
+    if (!customFieldsList) return [];
+    const rows = customFieldsList.querySelectorAll(".custom-field-row-item");
+    const arr = [];
+    rows.forEach(r => {
+      const label = r.querySelector(".custom-field-label")?.value.trim() || "";
+      const value = r.querySelector(".custom-field-val")?.value.trim() || "";
+      if (label || value) {
+        arr.push({ label, value });
+      }
+    });
+    return arr;
+  }
+
+  if (btnAddCustomField) {
+    btnAddCustomField.addEventListener("click", () => {
+      addCustomFieldRow();
+      showToast("✏️ New custom field row added! Enter heading and value.", "info");
     });
   }
 
@@ -573,6 +639,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     selectedSignatureFile = null;
 
+    // 6. Custom Details Added via Pencil
+    if (customFieldsList) {
+      customFieldsList.innerHTML = "";
+      if (Array.isArray(p.customFields) && p.customFields.length > 0) {
+        p.customFields.forEach(cf => addCustomFieldRow(cf));
+      }
+    }
+
     // 8. Update Live QR Code and Permalinks
     if (p.id) {
       updateQrCode(p.id);
@@ -713,6 +787,7 @@ document.addEventListener("DOMContentLoaded", () => {
         joiningDateRR: getVal("joiningDateRR"),
         photo: (existingPhotoPath && existingPhotoPath.value) ? existingPhotoPath.value : "assets/photos/demo-aditya.svg",
         signature: (existingSignaturePath && existingSignaturePath.value) ? existingSignaturePath.value : "assets/signatures/sample-signature.svg",
+        customFields: collectCustomFields(),
         updatedAt: new Date().toISOString().split("T")[0]
       };
 
@@ -779,6 +854,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (existingSignaturePath) existingSignaturePath.value = "assets/signatures/sample-signature.svg";
     if (signaturePreviewImg) signaturePreviewImg.src = "assets/signatures/sample-signature.svg";
     selectedSignatureFile = null;
+    if (customFieldsList) customFieldsList.innerHTML = "";
     if (personIdInput) {
       delete personIdInput.dataset.manuallyEdited;
       personIdInput.readOnly = false;

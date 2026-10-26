@@ -348,6 +348,24 @@
 
           </div>
 
+          <!-- Section 4: Dynamic Custom Particulars (Pencil Details Adder) -->
+          <div class="glass-panel form-section" id="customDetailsSection">
+            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h3><span>✏️</span> Custom Details / अतिरिक्त विवरण</h3>
+              <button type="button" id="btnAddCustomField" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+                <span style="font-size: 1rem;">✏️</span> <span>+ Add Custom Field</span>
+              </button>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px; margin-bottom: 14px;">
+              Agar kisi employee ka koi aur naya detail add karna ho (jaise PF Number, Station, Emergency Contact, etc.), to pencil button se Heading aur Value add kar sakte hain. Yeh table me automatic display ho jayega.
+            </p>
+            
+            <!-- Dynamic Custom Fields Container -->
+            <div id="customFieldsList">
+              <!-- Dynamically populated rows -->
+            </div>
+          </div>
+
           <!-- Submit Action Area -->
           <div style="margin-top: 24px; display: flex; gap: 14px;">
             <button id="btnSubmitForm" type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
