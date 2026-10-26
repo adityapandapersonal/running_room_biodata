@@ -623,11 +623,12 @@ class GitHubClient {
     const cleanId = (id || "").trim();
     if (!cleanId) throw new Error("No profile ID specified.");
 
-    // If dscsdc, ensure any stale deletion flag from earlier testing is cleared
-    if (cleanId.toLowerCase() === "dscsdc") {
+    // If sheshu-dev-panda, ensure any stale deletion flag from earlier testing is cleared
+    if (cleanId.toLowerCase() === "sheshu-dev-panda") {
       try {
         localStorage.removeItem(`rr_deleted_${cleanId}`);
-        localStorage.removeItem("rr_deleted_dscsdc");
+        localStorage.removeItem("rr_deleted_sheshu-dev-panda");
+        localStorage.removeItem("rr_deleted_Sheshu-Dev-Panda");
       } catch (_) {}
     } else {
       // Check if explicitly marked as deleted in this browser session
@@ -647,7 +648,8 @@ class GitHubClient {
       return this._profileCache.get(cleanId);
     }
 
-    const safeFile = `data/profiles/${cleanId}.json`;
+    const fileKey = cleanId.toLowerCase() === "sheshu-dev-panda" ? "Sheshu-Dev-Panda" : cleanId;
+    const safeFile = `data/profiles/${fileKey}.json`;
 
     // 1. If user has GitHub token: fetch directly from GitHub REST API (0ms lag, real-time git tree)
     if (this.hasToken()) {
@@ -678,7 +680,7 @@ class GitHubClient {
 
     // 2. Local relative path fetch (if on GitHub Pages or local preview)
     try {
-      const res = await fetch(`data/profiles/${encodeURIComponent(cleanId)}.json?t=` + Date.now(), { cache: "no-store" });
+      const res = await fetch(`data/profiles/${encodeURIComponent(fileKey)}.json?t=` + Date.now(), { cache: "no-store" });
       if (res.ok) {
         const text = await res.text();
         if (text && text.trim().startsWith("{")) {
@@ -695,7 +697,7 @@ class GitHubClient {
 
     // 3. Raw GitHub fetch with anti-cache headers
     try {
-      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${encodeURIComponent(cleanId)}.json?t=${Date.now()}&_cb=${Math.random().toString(36).substring(7)}`;
+      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${encodeURIComponent(fileKey)}.json?t=${Date.now()}&_cb=${Math.random().toString(36).substring(7)}`;
       const res = await fetch(rawUrl, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache, no-store, must-revalidate" }

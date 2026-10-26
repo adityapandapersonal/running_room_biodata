@@ -89,11 +89,11 @@ function renderProfile(p, id) {
   // 2. Name & Designation & ID Card No
   setText("profileName", p.fullName || "Unnamed Employee");
 
-  // Exclusive Verified Badge: Hardcoded ONLY for 'dscsdc', zero badge on any other account
+  // Exclusive Verified Badge: Hardcoded ONLY for 'Sheshu-Dev-Panda', zero badge on any other account
   const badgeContainer = document.getElementById("profileVerifiedBadge");
   const cleanId = (id || p.id || "").toLowerCase().trim();
   if (badgeContainer) {
-    if (cleanId === "dscsdc") {
+    if (cleanId === "sheshu-dev-panda") {
       badgeContainer.innerHTML = `
         <span class="verified-badge-wrapper" title="Lead Coder" aria-label="Lead Coder">
           <svg class="verified-rosette" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
