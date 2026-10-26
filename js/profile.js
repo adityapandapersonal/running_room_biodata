@@ -680,12 +680,9 @@ function showErrorState(id, message) {
         <p style="color: #cbd5e1; font-size: 0.98rem; line-height: 1.6; margin-bottom: 12px;">
           The employee biodata for ID <code style="background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 4px; color: #fca5a5; font-weight: 600;">${escapeHtml(id)}</code> has been permanently removed or does not exist.
         </p>
-        <p style="color: #94a3b8; font-size: 0.84rem; margin-bottom: 26px;">
+        <p style="color: #94a3b8; font-size: 0.84rem; margin-bottom: 0;">
           Yeh record repository se delete kar diya gaya hai. Is QR code ka link aab invalid ho chuka hai.
         </p>
-        <a href="admin.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 8px;">
-          ⚙️ Open Admin Panel
-        </a>
       </div>
     `;
   }
