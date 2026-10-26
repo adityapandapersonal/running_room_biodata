@@ -12,6 +12,36 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentMode = "new"; // 'new' | 'edit'
   let selectedPhotoFile = null;
 
+  // ----------------------------------------------------
+  // Floating Toast Notification Helper
+  // ----------------------------------------------------
+  function showToast(message, type = "info") {
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toastContainer";
+      container.className = "toast-container";
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    
+    let icon = "ℹ️";
+    if (type === "success") icon = "✅";
+    if (type === "error") icon = "⚠️";
+
+    toast.innerHTML = `<span style="font-size: 1.15rem; line-height: 1;">${icon}</span><span style="flex: 1;">${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(20px)";
+      toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      setTimeout(() => toast.remove(), 350);
+    }, 3800);
+  }
+  window.showToast = showToast;
+
   // Login Gate Elements
   const loginGateOverlay = document.getElementById("loginGateOverlay");
   const adminApp = document.getElementById("adminApp");
@@ -380,18 +410,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
-  // 9. Dropdown for Editing Existing Profiles
+  // 9. Dropdown for Editing Existing Profiles (Zero-Click Auto-Fill)
   // ----------------------------------------------------
   async function populateRegistryDropdown() {
     if (!selectPerson) return;
+    const statusNotice = document.getElementById("loadStatusNotice");
+    if (statusNotice) {
+      statusNotice.innerHTML = `<span>⏳</span> <span style="color: var(--accent-secondary);">Fetching registered profiles from GitHub...</span>`;
+    }
     selectPerson.innerHTML = '<option value="">Loading registered persons from GitHub...</option>';
-    let loadedProfiles = [];
 
     try {
       const reg = await ghClient.getRegistry();
       selectPerson.innerHTML = '<option value="">-- Choose a person to edit --</option>';
+
       if (reg.profiles && reg.profiles.length > 0) {
-        loadedProfiles = reg.profiles;
         reg.profiles.forEach((p) => {
           const opt = document.createElement("option");
           opt.value = p.id;
@@ -399,51 +432,86 @@ document.addEventListener("DOMContentLoaded", () => {
           selectPerson.appendChild(opt);
         });
 
-        // Auto-select the first registered person if available
+        // Automatically prioritize the most recently updated or first person
         if (selectPerson.options.length >= 2) {
-          selectPerson.selectedIndex = 1;
+          // If sheshu-dev-panda exists, pre-select it or default to index 1
+          const sheshuIdx = Array.from(selectPerson.options).findIndex((o) => o.value === "sheshu-dev-panda");
+          selectPerson.selectedIndex = sheshuIdx > 0 ? sheshuIdx : 1;
+        }
+
+        if (statusNotice) {
+          statusNotice.innerHTML = `<span>⚡</span> <span>Auto-fill ready. Selecting any person instantly fills all details.</span>`;
         }
       } else {
         selectPerson.innerHTML = '<option value="">No profiles found in registry</option>';
+        if (statusNotice) {
+          statusNotice.innerHTML = `<span>⚠️</span> <span>No registered profiles found in repository.</span>`;
+        }
       }
     } catch (err) {
       console.error("Registry load error:", err);
       selectPerson.innerHTML = '<option value="">Failed to load profiles list</option>';
       showToast("Error loading registry: " + err.message, "error");
+      if (statusNotice) {
+        statusNotice.innerHTML = `<span>❌</span> <span style="color: #f87171;">Failed to load registry: ${err.message}</span>`;
+      }
       return;
     }
 
-    // Now safely load the selected person's details in a separate try/catch
+    // Zero-click instant load: automatically populate form for the selected person!
     if (selectPerson.value) {
-      try {
-        await loadSelectedPersonDetails();
-      } catch (loadErr) {
-        console.warn("Auto-load of first profile skipped:", loadErr);
-      }
+      await loadSelectedPersonDetails(selectPerson.value);
     }
   }
 
-  async function loadSelectedPersonDetails() {
+  async function loadSelectedPersonDetails(targetId = null) {
     if (!selectPerson) return;
-    const id = selectPerson.value;
+    const id = (targetId || selectPerson.value || "").trim();
     if (!id) {
-      showToast("Please choose a person from the dropdown first.", "error");
+      console.log("No person ID selected for auto-fill");
       return;
     }
 
+    // Keep dropdown selection synchronized if passed programmatically
+    if (selectPerson.value !== id) {
+      selectPerson.value = id;
+    }
+
+    const statusNotice = document.getElementById("loadStatusNotice");
+    if (statusNotice) {
+      statusNotice.innerHTML = `<span>⏳</span> <span style="color: var(--accent-secondary);">Fetching full profile JSON for <strong>${id}</strong>...</span>`;
+    }
+
     try {
-      showToast(`Loading details for '${id}'...`, "info");
+      console.log(`[Auto-Fill] Loading profile JSON for '${id}'...`);
       const profile = await ghClient.getProfileById(id);
       populateFormWithProfile(profile);
-      showToast(`Loaded ${profile.fullName || id}! Ready to edit.`, "success");
+
+      if (statusNotice) {
+        statusNotice.innerHTML = `<span>✅</span> <span style="color: #34d399; font-weight: 600;">Details loaded for <strong>${profile.fullName || id}</strong> directly from JSON!</span>`;
+      }
+      showToast(`Auto-filled details for "${profile.fullName || id}"!`, "success");
     } catch (err) {
-      console.error("Profile load error:", err);
+      console.error("Profile auto-fill error:", err);
+      if (statusNotice) {
+        statusNotice.innerHTML = `<span>❌</span> <span style="color: #f87171;">Could not load profile: ${err.message}</span>`;
+      }
       showToast(`Could not load profile: ${err.message}`, "error");
     }
   }
 
+  // Zero-click instant event listeners: fires instantly on selection change or input
   if (selectPerson) {
-    selectPerson.addEventListener("change", loadSelectedPersonDetails);
+    selectPerson.addEventListener("change", (e) => {
+      if (e.target.value) {
+        loadSelectedPersonDetails(e.target.value);
+      }
+    });
+    selectPerson.addEventListener("input", (e) => {
+      if (e.target.value) {
+        loadSelectedPersonDetails(e.target.value);
+      }
+    });
   }
 
   if (btnRefreshRegistry) {
@@ -455,57 +523,116 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (btnForceLoadPerson) {
-    btnForceLoadPerson.addEventListener("click", loadSelectedPersonDetails);
+    btnForceLoadPerson.addEventListener("click", () => {
+      if (selectPerson && selectPerson.value) {
+        loadSelectedPersonDetails(selectPerson.value);
+      }
+    });
   }
 
   function populateFormWithProfile(p) {
-    if (!p) return;
+    if (!p) {
+      console.warn("populateFormWithProfile received empty data");
+      return;
+    }
+    console.log("[Auto-Fill] Populating form with profile:", p);
+
+    // 1. Unique ID / Slug (Locked in edit mode to preserve URL and QR code)
     if (personIdInput) {
       personIdInput.value = p.id || "";
-      personIdInput.readOnly = true; // Lock ID in edit mode to preserve URL!
+      personIdInput.readOnly = true;
+      personIdInput.style.backgroundColor = "rgba(255, 255, 255, 0.05)";
+      personIdInput.style.cursor = "not-allowed";
     }
-    if (fullNameInput) fullNameInput.value = p.fullName || "";
-    
-    const setVal = (elemId, val) => {
-      const elem = document.getElementById(elemId);
-      if (elem) elem.value = val || "";
+
+    // 2. Full Name
+    if (fullNameInput) {
+      fullNameInput.value = p.fullName || "";
+    }
+
+    // Helper for safe input assignment
+    const setSafeVal = (elemId, val) => {
+      const el = document.getElementById(elemId);
+      if (el) {
+        el.value = (val !== undefined && val !== null) ? val : "";
+      } else {
+        console.warn(`Element #${elemId} not found in DOM`);
+      }
     };
 
-    setVal("tagline", p.tagline || p.occupation || "");
-    setVal("phone", p.phone || "");
-    setVal("whatsapp", p.whatsapp || p.phone || "");
-    setVal("email", p.email || "");
-    setVal("dob", p.dob || "");
-    setVal("gender", p.gender || "");
-    setVal("bloodGroup", p.bloodGroup || "");
-    setVal("address", p.address || "");
-    setVal("about", p.about || "");
+    // 3. Particulars
+    setSafeVal("tagline", p.tagline || p.occupation || "");
+    setSafeVal("phone", p.phone || "");
+    setSafeVal("whatsapp", p.whatsapp || p.phone || "");
+    setSafeVal("email", p.email || "");
 
-    setVal("skillsInput", Array.isArray(p.skills) ? p.skills.join(", ") : "");
-    setVal("languagesInput", Array.isArray(p.languages) ? p.languages.join(", ") : "");
+    // Normalize DOB for HTML5 <input type="date"> (requires YYYY-MM-DD)
+    let cleanDob = (p.dob || "").trim();
+    if (cleanDob && cleanDob.includes("/")) {
+      const parts = cleanDob.split("/");
+      if (parts.length === 3 && parts[2].length === 4) {
+        cleanDob = `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+      }
+    }
+    setSafeVal("dob", cleanDob.slice(0, 10));
 
-    // Photo preview (instant raw URL)
-    if (existingPhotoPath) existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
-    if (photoPreviewImg) photoPreviewImg.src = resolvePhotoUrl(p.photo);
+    setSafeVal("gender", p.gender || "");
+    setSafeVal("bloodGroup", p.bloodGroup || "");
+    setSafeVal("address", p.address || "");
+    setSafeVal("about", p.about || "");
+
+    // 4. Skills & Languages
+    const skillsText = Array.isArray(p.skills) ? p.skills.join(", ") : (p.skills || "");
+    const languagesText = Array.isArray(p.languages) ? p.languages.join(", ") : (p.languages || "");
+    setSafeVal("skillsInput", skillsText);
+    setSafeVal("languagesInput", languagesText);
+
+    // 5. Photo Preview (with instant raw URL)
+    if (existingPhotoPath) {
+      existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
+    }
+    if (photoPreviewImg) {
+      photoPreviewImg.src = resolvePhotoUrl(p.photo);
+      photoPreviewImg.onerror = () => {
+        photoPreviewImg.src = "assets/photos/demo-aditya.svg";
+      };
+    }
     selectedPhotoFile = null;
 
-    // Clear and rebuild repeaters
+    // 6. Repeaters: Education
     if (eduList) {
       eduList.innerHTML = "";
-      if (Array.isArray(p.education)) {
-        p.education.forEach(edu => addEducationRow(edu));
+      if (Array.isArray(p.education) && p.education.length > 0) {
+        p.education.forEach((edu) => addEducationRow(edu));
       }
     }
 
+    // 7. Repeaters: Experience
     if (expList) {
       expList.innerHTML = "";
-      if (Array.isArray(p.experience)) {
-        p.experience.forEach(exp => addExperienceRow(exp));
+      if (Array.isArray(p.experience) && p.experience.length > 0) {
+        p.experience.forEach((exp) => addExperienceRow(exp));
       }
     }
 
-    // Refresh QR code
-    updateQrCode(p.id);
+    // 8. Update Live QR Code and Permalinks
+    if (p.id) {
+      updateQrCode(p.id);
+    }
+
+    // 9. Update Submit Button Text to clearly show person
+    if (btnSubmitText) {
+      btnSubmitText.textContent = `🔄 Update & Commit Changes (${p.fullName || p.id})`;
+    }
+
+    // 10. Subtle glow animation on form to visually confirm auto-fill
+    if (biodataForm) {
+      biodataForm.style.transition = "box-shadow 0.4s ease";
+      biodataForm.style.boxShadow = "0 0 25px rgba(168, 85, 247, 0.45)";
+      setTimeout(() => {
+        biodataForm.style.boxShadow = "";
+      }, 700);
+    }
   }
 
   // ----------------------------------------------------
@@ -716,7 +843,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (existingPhotoPath) existingPhotoPath.value = "assets/photos/demo-aditya.svg";
     if (photoPreviewImg) photoPreviewImg.src = "assets/photos/demo-aditya.svg";
     selectedPhotoFile = null;
-    if (personIdInput) delete personIdInput.dataset.manuallyEdited;
+    if (personIdInput) {
+      delete personIdInput.dataset.manuallyEdited;
+      personIdInput.readOnly = false;
+      personIdInput.style.backgroundColor = "";
+      personIdInput.style.cursor = "";
+    }
+    if (btnSubmitText) {
+      btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
+    }
     updateQrCode("demo-person");
   }
 

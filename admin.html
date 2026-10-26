@@ -108,20 +108,22 @@
         <div id="editSelectorSection" class="glass-panel form-section" style="display: none; border-color: var(--accent-primary);">
           <div class="form-group" style="margin-bottom: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label for="selectExistingPerson" style="margin: 0;">Choose Person to Edit:</label>
-              <button id="btnRefreshRegistry" type="button" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.78rem;" title="Reload profile list from GitHub">
-                🔄 Refresh List
-              </button>
+              <label for="selectExistingPerson" style="margin: 0; font-weight: 600;">Choose Person to Edit:</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="autoSyncBadge" style="font-size: 0.76rem; color: var(--accent-secondary); font-weight: 600;">⚡ Instant Auto-Fill</span>
+                <button id="btnRefreshRegistry" type="button" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.78rem;" title="Reload profile list from GitHub">
+                  🔄 Refresh List
+                </button>
+              </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <select id="selectExistingPerson" class="form-control" style="flex: 1;">
-                <option value="">-- Select a registered person --</option>
+            <div>
+              <select id="selectExistingPerson" class="form-control" style="font-weight: 600; cursor: pointer;">
+                <option value="">-- Choose a person to edit --</option>
               </select>
-              <button id="btnForceLoadPerson" type="button" class="btn btn-primary btn-sm" style="padding: 8px 16px;">
-                📂 Load Details
-              </button>
             </div>
-            <span class="input-hint">Selecting a person will instantly pull their current data and photo from GitHub.</span>
+            <div id="loadStatusNotice" style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+              <span>💡</span> <span>Select any person above &mdash; full details, photo, and QR code auto-fill immediately from JSON!</span>
+            </div>
           </div>
         </div>
 
@@ -478,9 +480,9 @@
   </div>
 
   <!-- Scripts with Cache Busting -->
-  <script src="assets/vendor/qrcode.min.js?v=3.0"></script>
-  <script src="js/config.js?v=3.0"></script>
-  <script src="js/github-api.js?v=3.0"></script>
-  <script src="js/admin.js?v=3.0"></script>
+  <script src="assets/vendor/qrcode.min.js?v=3.2"></script>
+  <script src="js/config.js?v=3.2"></script>
+  <script src="js/github-api.js?v=3.2"></script>
+  <script src="js/admin.js?v=3.2"></script>
 </body>
 </html>

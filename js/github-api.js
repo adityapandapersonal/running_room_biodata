@@ -5,6 +5,7 @@
 class GitHubClient {
   constructor(config) {
     this.config = config || window.APP_CONFIG;
+    this._profileCache = new Map();
     // Restore persistent repository configs from localStorage if available
     this.restorePersistedConfig();
   }
@@ -274,6 +275,11 @@ class GitHubClient {
     const profileUrl = `${this.config.getBaseUrl()}?id=${id}`;
     updateProgress("qr_ready", "done", "Permanent Dynamic QR Code is ready!");
 
+    // Store in local memory cache for instant retrieval
+    if (this._profileCache) {
+      this._profileCache.set(id, Object.assign({}, personData));
+    }
+
     return {
       success: true,
       id: id,
@@ -379,45 +385,92 @@ class GitHubClient {
 
   /**
    * Fetch a single profile by ID
-   * Priority: Raw GitHub -> Local relative -> GitHub REST API
+   * Priority: Memory Cache -> Raw GitHub -> Local relative -> GitHub REST API -> Registry Fallback
    */
   async getProfileById(id) {
-    const cleanId = encodeURIComponent((id || "").trim());
+    const cleanId = (id || "").trim();
+    if (!cleanId) throw new Error("No profile ID specified.");
+
+    // 0. Memory Cache (0ms Instant Load)
+    if (!this._profileCache) this._profileCache = new Map();
+    if (this._profileCache.has(cleanId)) {
+      console.log(`[GitHubClient] Loaded profile '${cleanId}' from memory cache.`);
+      return this._profileCache.get(cleanId);
+    }
+
+    const encodedId = encodeURIComponent(cleanId);
 
     // 1. Raw GitHub fetch (zero build delay, works from any origin)
     try {
-      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${cleanId}.json?t=${Date.now()}`;
+      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${encodedId}.json?t=${Date.now()}`;
       const res = await fetch(rawUrl, { cache: "no-store" });
       if (res.ok) {
         const text = await res.text();
         if (text && text.trim().startsWith("{")) {
-          return JSON.parse(text);
+          const profile = JSON.parse(text);
+          this._profileCache.set(cleanId, profile);
+          console.log(`[GitHubClient] Loaded profile '${cleanId}' from Raw GitHub.`);
+          return profile;
         }
       }
     } catch (e) {
-      console.warn("Raw profile fetch failed, trying fallback:", e);
+      console.warn("Raw profile fetch failed, trying local fallback:", e);
     }
 
     // 2. Local relative path fetch (if on GitHub Pages)
     try {
-      const res = await fetch(`data/profiles/${cleanId}.json?t=` + Date.now());
+      const res = await fetch(`data/profiles/${encodedId}.json?t=` + Date.now());
       if (res.ok) {
         const text = await res.text();
         if (text && text.trim().startsWith("{")) {
-          return JSON.parse(text);
+          const profile = JSON.parse(text);
+          this._profileCache.set(cleanId, profile);
+          console.log(`[GitHubClient] Loaded profile '${cleanId}' from local relative path.`);
+          return profile;
         }
       }
     } catch (_) {}
 
     // 3. GitHub REST API fallback (with token)
     try {
-      const file = await this.getFile(`data/profiles/${cleanId}.json`);
+      const file = await this.getFile(`data/profiles/${encodedId}.json`);
       if (file && file.content) {
         const decoded = this.decodeBase64(file.content);
-        return JSON.parse(decoded);
+        const profile = JSON.parse(decoded);
+        this._profileCache.set(cleanId, profile);
+        console.log(`[GitHubClient] Loaded profile '${cleanId}' from GitHub REST API.`);
+        return profile;
       }
     } catch (e) {
       console.warn("API profile fetch failed:", e);
+    }
+
+    // 4. Registry fallback if specific JSON file had network/caching delay
+    try {
+      const reg = await this.getRegistry();
+      const match = (reg.profiles || []).find((p) => p.id === cleanId);
+      if (match) {
+        console.warn(`[GitHubClient] Using registry summary fallback for '${cleanId}'.`);
+        const fallbackProfile = {
+          id: match.id,
+          fullName: match.fullName || match.id,
+          tagline: match.occupation || "",
+          occupation: match.occupation || "",
+          phone: match.phone || "",
+          whatsapp: match.phone || "",
+          email: match.email || "",
+          photo: match.photo || "assets/photos/demo-aditya.svg",
+          education: [],
+          experience: [],
+          skills: [],
+          languages: [],
+          updatedAt: match.updatedAt || ""
+        };
+        this._profileCache.set(cleanId, fallbackProfile);
+        return fallbackProfile;
+      }
+    } catch (regErr) {
+      console.warn("Registry fallback also failed:", regErr);
     }
 
     throw new Error(`Profile '${id}' could not be loaded from GitHub.`);
