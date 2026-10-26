@@ -1,16 +1,6 @@
 {
   "profiles": [
     {
-      "id": "sheshu-dev-panda",
-      "idCardNo": "RR/DGG/2024/0826",
-      "fullName": "Sheshu Dev Panda",
-      "designation": "Loco Pilot",
-      "phone": "9752443199",
-      "photo": "assets/photos/sheshu-dev-panda.webp",
-      "signature": "assets/signatures/sample-signature.svg",
-      "updatedAt": "2026-10-26"
-    },
-    {
       "id": "aditya panda",
       "idCardNo": "RR/DGG/737",
       "fullName": "Aditya Panda",
