@@ -96,6 +96,11 @@ document.addEventListener("DOMContentLoaded", () => {
     checkGitHubConnection();
     loadSettingsIntoModal();
     updateQrCode(personIdInput.value || "demo-person");
+
+    const navViewProfileBtn = document.getElementById("navViewProfileBtn");
+    if (navViewProfileBtn) {
+      navViewProfileBtn.href = window.APP_CONFIG.getBaseUrl();
+    }
   }
 
   // Cache DOM Elements
