@@ -188,10 +188,66 @@ function renderProfile(p, id) {
     };
   }
 
-  // 6. Setup Print PDF button
+  // 6. Setup Direct PDF Download Button
   const printBtn = document.getElementById("btnPrintPdf");
   if (printBtn) {
-    printBtn.onclick = () => window.print();
+    printBtn.onclick = async () => {
+      const cardEl = document.querySelector(".profile-card");
+      if (!cardEl) return;
+
+      const rawName = document.getElementById("profileName")?.textContent || "Employee";
+      const cleanName = rawName.trim().replace(/[^a-zA-Z0-9_\-\s]/g, "").replace(/\s+/g, "_") || "Employee";
+      const fileName = `${cleanName}_DGG_Running_Room_Biodata.pdf`;
+
+      if (typeof html2pdf !== "undefined") {
+        const noPdfEls = cardEl.querySelectorAll(".no-pdf");
+        const originalBtnHtml = printBtn.innerHTML;
+
+        try {
+          printBtn.innerHTML = `<span>⏳</span> <span>Generating Direct PDF...</span>`;
+          printBtn.disabled = true;
+
+          // Temporarily hide elements not meant for final PDF document
+          noPdfEls.forEach(el => {
+            el.setAttribute("data-prev-display", el.style.display || "");
+            el.style.display = "none";
+          });
+
+          const opt = {
+            margin: [8, 8, 8, 8],
+            filename: fileName,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              letterRendering: true,
+              scrollY: 0,
+              scrollX: 0,
+              backgroundColor: "#0b0f19"
+            },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+            pagebreak: { mode: ["avoid-all", "css", "legacy"] }
+          };
+
+          await html2pdf().set(opt).from(cardEl).save();
+          showToast(`Direct PDF saved: ${fileName}`, "success");
+        } catch (err) {
+          console.error("Direct PDF generation failed:", err);
+          showToast("Direct save failed, opening print dialog...", "info");
+          window.print();
+        } finally {
+          // Restore non-PDF elements
+          noPdfEls.forEach(el => {
+            el.style.display = el.getAttribute("data-prev-display") || "";
+          });
+          printBtn.innerHTML = originalBtnHtml;
+          printBtn.disabled = false;
+        }
+      } else {
+        // Fallback if library couldn't be loaded
+        window.print();
+      }
+    };
   }
 }
 
