@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Verified Digital Biodata & Profile Card with Permanent Dynamic QR Code">
-  <title>Digital Biodata - Verified Profile</title>
+  <meta name="description" content="Running Room Employee Biodata Card with Permanent Dynamic QR Code">
+  <title>Running Room Biodata - Verified Profile</title>
 
   <!-- Google Fonts Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/profile.css">
+  <link rel="stylesheet" href="css/base.css?v=4.0">
+  <link rel="stylesheet" href="css/profile.css?v=4.0">
 </head>
 <body>
 
@@ -32,20 +32,24 @@
 
         <h1 class="profile-name">
           <span id="profileName">Loading...</span>
-          <span class="verified-icon" title="Verified Profile">
+          <span class="verified-icon" title="Verified Running Room Record">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
             </svg>
           </span>
         </h1>
 
-        <p class="profile-tagline" id="profileTagline">Digital Biodata Card</p>
+        <p class="profile-tagline" id="profileDesignation">Running Room Employee</p>
 
         <div class="profile-badges">
           <span class="badge badge-verified">
-            <span class="pulse-dot"></span> Verified Biodata
+            <span class="pulse-dot"></span> Running Room Verified
           </span>
-          <span class="badge badge-permanent" id="lastUpdatedDate">Permanent Link</span>
+          <span class="badge badge-permanent" id="lastUpdatedDate">Permanent Dynamic QR</span>
+        </div>
+
+        <div class="id-card-pill" id="idCardPillBox">
+          🪪 ID CARD NO. : <strong id="profileIdCardNo">Loading...</strong>
         </div>
 
         <!-- Quick Interactive Action Bar -->
@@ -64,13 +68,14 @@
             <span>Call</span>
           </a>
 
-          <a id="actionEmail" href="#" class="action-btn">
+          <button id="btnPrintPdf" class="action-btn" type="button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
             </svg>
-            <span>Email</span>
-          </a>
+            <span>Print PDF</span>
+          </button>
 
           <button id="btnShareLink" class="action-btn" type="button">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -85,43 +90,122 @@
         </nav>
       </header>
 
-      <!-- Main Profile Content Body -->
+      <!-- Main Profile Content Body: Official Running Room Biodata Table -->
       <div class="profile-body">
         
-        <!-- About Section -->
-        <section id="sectionAbout">
-          <h2 class="section-title">About Me</h2>
-          <div class="section-content" id="profileAbout"></div>
+        <section class="rr-record-wrapper">
+          <div class="rr-table-header">
+            <h2 class="section-title" style="margin-bottom: 0;">Running Room Employee Particulars</h2>
+            <span class="rr-confidential-tag">OFFICIAL RECORD</span>
+          </div>
+
+          <div class="rr-biodata-table">
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">ID CARD NO. :-</div>
+              <div class="rr-field-value"><strong id="val_idCardNo">-</strong></div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Name :-</div>
+              <div class="rr-field-value"><strong id="val_fullName">-</strong></div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Designation :-</div>
+              <div class="rr-field-value" id="val_designation">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Father's Name :-</div>
+              <div class="rr-field-value" id="val_fatherName">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Mother's Name :-</div>
+              <div class="rr-field-value" id="val_motherName">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Husband's Name :-<br><small style="font-weight: normal; color: var(--text-muted);">(if applicable)</small></div>
+              <div class="rr-field-value" id="val_husbandName">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Date of Birth :-</div>
+              <div class="rr-field-value" id="val_dob">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Gender :-</div>
+              <div class="rr-field-value" id="val_gender">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Marital Status :-</div>
+              <div class="rr-field-value" id="val_maritalStatus">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Aadhaar Numbe :-</div>
+              <div class="rr-field-value" id="val_aadhaarNumber">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Mobile Numbe  :-</div>
+              <div class="rr-field-value">
+                <a id="val_mobileNumber" href="#" style="color: var(--accent-secondary); font-weight: 600; text-decoration: underline;">-</a>
+              </div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Residential Address :-</div>
+              <div class="rr-field-value" id="val_residentialAddress">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Police Verif. Done Date :-</div>
+              <div class="rr-field-value" id="val_policeVerifDoneDate">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Police Verif. Due Date :-</div>
+              <div class="rr-field-value" id="val_policeVerifDueDate">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Medical Exam. Done Date :-</div>
+              <div class="rr-field-value" id="val_medicalExamDoneDate">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Medical Exam. Due Date :-</div>
+              <div class="rr-field-value" id="val_medicalExamDueDate">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Identification Marks :-</div>
+              <div class="rr-field-value" id="val_identificationMarks">-</div>
+            </div>
+
+            <div class="rr-biodata-row">
+              <div class="rr-field-label">Date of Joining in RR :-</div>
+              <div class="rr-field-value" id="val_joiningDateRR">-</div>
+            </div>
+          </div>
         </section>
 
-        <!-- Personal Particulars Grid -->
-        <section id="sectionParticulars">
-          <h2 class="section-title">Personal Particulars</h2>
-          <div class="particulars-grid" id="particularsGrid"></div>
-        </section>
-
-        <!-- Education Timeline -->
-        <section id="sectionEducation">
-          <h2 class="section-title">Education & Qualifications</h2>
-          <div class="timeline" id="educationTimeline"></div>
-        </section>
-
-        <!-- Experience Timeline -->
-        <section id="sectionExperience">
-          <h2 class="section-title">Experience & Career</h2>
-          <div class="timeline" id="experienceTimeline"></div>
-        </section>
-
-        <!-- Skills Section -->
-        <section id="sectionSkills">
-          <h2 class="section-title">Skills & Competencies</h2>
-          <div class="tags-wrapper" id="skillsList"></div>
-        </section>
-
-        <!-- Languages Section -->
-        <section id="sectionLanguages">
-          <h2 class="section-title">Languages Known</h2>
-          <div class="tags-wrapper" id="languagesList"></div>
+        <!-- Signature of Employee Section -->
+        <section class="employee-signature-section">
+          <div class="sig-header">
+            <span class="sig-label">Signature of Employee :-</span>
+            <span class="sig-badge">Verified Sign</span>
+          </div>
+          <div class="sig-display-box">
+            <img id="profileSignature" class="signature-img" src="assets/signatures/sample-signature.svg" alt="Signature of Employee">
+          </div>
+          <div style="margin-top: 8px; font-size: 0.78rem; color: var(--text-muted); text-align: right;">
+            Digitally attested in Running Room Employee Registry
+          </div>
         </section>
 
         <!-- Permanent QR Box (Assurance of Dynamic Link) -->
@@ -130,7 +214,7 @@
           <div class="qr-permalink-details">
             <div class="qr-permalink-title">Permanent Dynamic QR Code</div>
             <div class="qr-permalink-note">
-              This QR code is permanently linked to this person. Even if details are updated in the future, this link and QR code remain permanently valid.
+              This QR code is permanently linked to this employee. Even when biodata is updated in the future, this link and QR code remain permanently valid.
             </div>
             <a id="profilePermalink" class="permalink-link" href="#" target="_blank"></a>
           </div>
@@ -140,18 +224,10 @@
 
       <!-- Footer Bar -->
       <footer class="profile-footer-bar">
-        <div>🔒 Non-Editable Verified Record</div>
+        <div>🔒 Running Room Verified Biodata</div>
         <div class="footer-btn-group">
-          <button id="btnPrintPdf" class="btn btn-secondary btn-sm" type="button">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 6 2 18 2 18 9"/>
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-              <rect x="6" y="14" width="12" height="8"/>
-            </svg>
-            Print / Save PDF
-          </button>
           <a href="admin.html" class="btn btn-secondary btn-sm" title="Admin Portal">
-            ⚙️ Admin
+            ⚙️ Admin Studio
           </a>
         </div>
       </footer>
@@ -159,9 +235,9 @@
   </main>
 
   <!-- Scripts -->
-  <script src="assets/vendor/qrcode.min.js?v=3.2"></script>
-  <script src="js/config.js?v=3.2"></script>
-  <script src="js/github-api.js?v=3.2"></script>
-  <script src="js/profile.js?v=3.2"></script>
+  <script src="assets/vendor/qrcode.min.js?v=4.0"></script>
+  <script src="js/config.js?v=4.0"></script>
+  <script src="js/github-api.js?v=4.0"></script>
+  <script src="js/profile.js?v=4.0"></script>
 </body>
 </html>

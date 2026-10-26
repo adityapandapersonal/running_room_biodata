@@ -1,5 +1,6 @@
 {
   "id": "sheshu-dev-panda",
+  "idCardNo": "RR/DGG/2024/0826",
   "fullName": "Sheshu Dev Panda",
   "tagline": "ALP",
   "phone": "9752443199",
@@ -7,36 +8,17 @@
   "email": "pandasd08@gmail.com",
   "dob": "2008-08-26",
   "gender": "Male",
-  "bloodGroup": "O+",
-  "address": "Panchwati Bhawan , Private House, Budhwari Para Ward No.15 patel wadi dongargarh chattigarh",
-  "about": "Sheshu Dev Panda is known as a dedicated and hardworking individual who has contributed positively to his field through his knowledge, skills, and commitment. He is respected for his determination, leadership qualities, and ability to inspire others. Throughout his journey, he has shown a strong focus on learning, innovation, and personal growth. His work reflects sincerity, discipline, and a passion for excellence. Sheshu Dev Panda serves as an example for young people who wish to achieve success through dedication and continuous effort. His achievements and positive attitude make him a well-regarded personality among those who know and work with him.",
+  "maritalStatus": "Unmarried",
+  "aadhaarNumber": "XXXX-XXXX-9199",
+  "mobileNumber": "9752443199",
+  "residentialAddress": "Panchwati Bhawan, Private House, Budhwari Para Ward No.15 Patel Wadi, Dongargarh, Chhattisgarh",
+  "policeVerifDoneDate": "2024-01-15",
+  "policeVerifDueDate": "2027-01-14",
+  "medicalExamDoneDate": "2023-11-20",
+  "medicalExamDueDate": "2026-11-19",
+  "identificationMarks": "A mole on left forehead, cut mark on right wrist",
+  "joiningDateRR": "2021-04-01",
   "photo": "assets/photos/sheshu-dev-panda.webp",
-  "education": [
-    {
-      "degree": "Electrical Engineer",
-      "institution": "IIT Bombay",
-      "year": "1998-2001",
-      "score": "10 CGPA"
-    }
-  ],
-  "experience": [
-    {
-      "role": "Loco Pilot",
-      "company": "Indian Railways",
-      "duration": "2001-present",
-      "description": "Train Chalao Kaam"
-    }
-  ],
-  "skills": [
-    "Mahan Aadmi"
-  ],
-  "languages": [
-    "Hindi",
-    "english",
-    "spanish",
-    "french",
-    "odia",
-    "bodo duniya ki sari language aati hai"
-  ],
+  "signature": "assets/signatures/sample-signature.svg",
   "updatedAt": "2026-10-26"
 }

@@ -1,57 +1,24 @@
 {
   "id": "demo-aditya",
+  "idCardNo": "RR/BSP/2024/0101",
   "fullName": "Aditya Panda",
-  "tagline": "Software Engineer & Tech Creator",
+  "designation": "Chief Loco Inspector / Creator",
+  "fatherName": "Mr. R. K. Panda",
+  "motherName": "Mrs. M. Panda",
+  "husbandName": "",
   "dob": "1998-08-15",
   "gender": "Male",
-  "bloodGroup": "O+",
-  "phone": "+91 98765 43210",
-  "whatsapp": "+91 98765 43210",
-  "email": "aditya.panda@example.com",
-  "address": "Bhubaneswar, Odisha, India",
+  "maritalStatus": "Unmarried",
+  "aadhaarNumber": "XXXX-XXXX-4321",
+  "mobileNumber": "+91 98765 43210",
+  "residentialAddress": "Plot No. 42, Rail Vihar, Bhubaneswar, Odisha, India",
+  "policeVerifDoneDate": "2023-05-10",
+  "policeVerifDueDate": "2026-05-09",
+  "medicalExamDoneDate": "2024-02-14",
+  "medicalExamDueDate": "2027-02-13",
+  "identificationMarks": "Small black mole on right collarbone",
+  "joiningDateRR": "2022-01-10",
   "photo": "assets/photos/demo-aditya.svg",
-  "about": "Passionate developer focused on building scalable web systems, automation, and modern digital applications. Always eager to learn, build, and innovate.",
-  "education": [
-    {
-      "degree": "B.Tech in Computer Science & Engineering",
-      "institution": "National Institute of Technology",
-      "year": "2016 - 2020",
-      "score": "8.8 CGPA"
-    },
-    {
-      "degree": "Higher Secondary (12th Science)",
-      "institution": "DAV Public School",
-      "year": "2014 - 2016",
-      "score": "92%"
-    }
-  ],
-  "experience": [
-    {
-      "role": "Senior Full-Stack Engineer",
-      "company": "Aditya Panda Pvt. Ltd",
-      "duration": "2022 - Present",
-      "description": "Architecting modern web applications, APIs, and AI-driven automation workflows."
-    },
-    {
-      "role": "Software Developer",
-      "company": "Tech Innovations Inc.",
-      "duration": "2020 - 2022",
-      "description": "Engineered responsive client portals, backend microservices, and database models."
-    }
-  ],
-  "skills": [
-    "JavaScript / TypeScript",
-    "Python",
-    "React / Next.js",
-    "Node.js",
-    "Git & Cloud Deployments",
-    "UI/UX Systems"
-  ],
-  "languages": ["English", "Hindi", "Odia"],
-  "socials": {
-    "linkedin": "https://linkedin.com",
-    "github": "https://github.com",
-    "website": "https://example.com"
-  },
+  "signature": "assets/signatures/sample-signature.svg",
   "updatedAt": "2026-10-26"
 }

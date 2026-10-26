@@ -150,57 +150,96 @@
             </div>
           </div>
 
-          <!-- Section 2: Photo Upload & Personal Particulars -->
+          <!-- Section 2: Photo & Signature Upload -->
           <div class="glass-panel form-section">
             <div class="form-section-header">
-              <h3><span>👤</span> Photo & Basic Details</h3>
+              <h3><span>📷</span> Employee Photo & Signature</h3>
             </div>
 
-            <!-- Photo Upload Area -->
-            <div class="photo-upload-container">
-              <div class="photo-preview-circle">
-                <img id="photoPreviewImg" class="photo-preview-img" src="assets/photos/demo-aditya.svg" alt="Preview">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+              <!-- 1. Employee Photo Upload Area -->
+              <div class="photo-upload-container" style="border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-md); padding: 16px;">
+                <div class="photo-preview-circle">
+                  <img id="photoPreviewImg" class="photo-preview-img" src="assets/photos/demo-aditya.svg" alt="Preview">
+                </div>
+                <div class="photo-upload-actions">
+                  <div style="font-weight: 600; margin-bottom: 6px; color: var(--text-primary);">Employee Photo</div>
+                  <label for="photoFileInput" class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 6px;">
+                    📷 Choose / Capture Photo
+                  </label>
+                  <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
+                  <div class="input-hint">Passport size square photo.</div>
+                  <input type="hidden" id="existingPhotoPath" value="assets/photos/demo-aditya.svg">
+                </div>
               </div>
-              <div class="photo-upload-actions">
-                <label for="photoFileInput" class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 6px;">
-                  📷 Choose Person Photo
-                </label>
-                <input type="file" id="photoFileInput" accept="image/png, image/jpeg, image/webp" style="display: none;">
-                <div class="input-hint">Square format recommended (JPG, PNG). Automatically committed to GitHub repository.</div>
-                <input type="hidden" id="existingPhotoPath" value="assets/photos/demo-aditya.svg">
+
+              <!-- 2. Employee Signature Upload Area -->
+              <div style="border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="font-weight: 600; color: var(--text-primary);">Signature of Employee</div>
+                    <span style="font-size: 0.72rem; color: var(--accent-secondary); font-weight: 600;">Camera / File</span>
+                  </div>
+                  <!-- Signature Preview Box -->
+                  <div style="background: #ffffff; border-radius: var(--radius-md); padding: 10px; display: flex; justify-content: center; align-items: center; min-height: 80px; margin-bottom: 10px; border: 1px solid #cbd5e1;">
+                    <img id="signaturePreviewImg" src="assets/signatures/sample-signature.svg" alt="Signature Preview" style="max-height: 70px; max-width: 100%; object-fit: contain;">
+                  </div>
+                </div>
+                <div>
+                  <label for="signatureFileInput" class="btn btn-secondary btn-sm" style="cursor: pointer; width: 100%; text-align: center; display: block; margin-bottom: 4px;">
+                    ✍️ Photo Khichke / Upload Sign
+                  </label>
+                  <input type="file" id="signatureFileInput" accept="image/*" capture="environment" style="display: none;">
+                  <div class="input-hint">Paper par sign karke photo kheench kar ya phone gallery se upload karein.</div>
+                  <input type="hidden" id="existingSignaturePath" value="assets/signatures/sample-signature.svg">
+                </div>
               </div>
             </div>
+          </div>
 
-            <!-- Particulars Inputs -->
+          <!-- Section 3: Official Running Room Particulars (18 Fields) -->
+          <div class="glass-panel form-section">
+            <div class="form-section-header">
+              <h3><span>📋</span> Running Room Employee Particulars</h3>
+            </div>
+
+            <!-- Row 1: ID Card No, Name, Designation -->
             <div class="form-row">
               <div class="form-group">
-                <label for="fullName">Full Name *</label>
-                <input type="text" id="fullName" class="form-control" placeholder="e.g. Rahul Sharma" required>
+                <label for="idCardNo">ID CARD NO. *</label>
+                <input type="text" id="idCardNo" class="form-control" placeholder="e.g. RR/DGG/2024/0826" required>
               </div>
 
               <div class="form-group">
-                <label for="tagline">Occupation / Tagline</label>
-                <input type="text" id="tagline" class="form-control" placeholder="e.g. Software Engineer / Consultant">
+                <label for="fullName">Name *</label>
+                <input type="text" id="fullName" class="form-control" placeholder="e.g. Sheshu Dev Panda" required>
+              </div>
+
+              <div class="form-group">
+                <label for="designation">Designation *</label>
+                <input type="text" id="designation" class="form-control" placeholder="e.g. Loco Pilot / Sr. ALP" required>
               </div>
             </div>
 
+            <!-- Row 2: Father's Name, Mother's Name, Husband's Name -->
             <div class="form-row">
               <div class="form-group">
-                <label for="phone">Phone Number *</label>
-                <input type="tel" id="phone" class="form-control" placeholder="e.g. +91 98765 43210" required>
+                <label for="fatherName">Father's Name</label>
+                <input type="text" id="fatherName" class="form-control" placeholder="e.g. Late S. N. Panda">
               </div>
 
               <div class="form-group">
-                <label for="whatsapp">WhatsApp Number</label>
-                <input type="tel" id="whatsapp" class="form-control" placeholder="e.g. +91 98765 43210">
+                <label for="motherName">Mother's Name</label>
+                <input type="text" id="motherName" class="form-control" placeholder="e.g. Smt. K. Panda">
               </div>
 
               <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" class="form-control" placeholder="e.g. rahul@example.com">
+                <label for="husbandName">Husband's Name <small style="color: var(--text-muted);">(if applicable)</small></label>
+                <input type="text" id="husbandName" class="form-control" placeholder="Husband's name if married female">
               </div>
             </div>
 
+            <!-- Row 3: DOB, Gender, Marital Status -->
             <div class="form-row">
               <div class="form-group">
                 <label for="dob">Date of Birth</label>
@@ -218,66 +257,75 @@
               </div>
 
               <div class="form-group">
-                <label for="bloodGroup">Blood Group</label>
-                <select id="bloodGroup" class="form-control">
-                  <option value="">Select Blood Group</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
+                <label for="maritalStatus">Marital Status</label>
+                <select id="maritalStatus" class="form-control">
+                  <option value="">Select Marital Status</option>
+                  <option value="Unmarried">Unmarried</option>
+                  <option value="Married">Married</option>
+                  <option value="Widowed">Widowed</option>
+                  <option value="Divorced">Divorced</option>
                 </select>
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="address">Full Address / Location</label>
-              <input type="text" id="address" class="form-control" placeholder="e.g. Mumbai, Maharashtra, India">
-            </div>
-
-            <div class="form-group">
-              <label for="about">About Me / Summary</label>
-              <textarea id="about" class="form-control" placeholder="Brief summary or bio..."></textarea>
-            </div>
-          </div>
-
-          <!-- Section 3: Education Repeater -->
-          <div class="glass-panel form-section">
-            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <h3><span>🎓</span> Education & Qualifications</h3>
-              <button id="btnAddEdu" type="button" class="btn btn-secondary btn-sm">+ Add Education</button>
-            </div>
-            <div id="educationList"></div>
-          </div>
-
-          <!-- Section 4: Experience Repeater -->
-          <div class="glass-panel form-section">
-            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <h3><span>💼</span> Career & Experience</h3>
-              <button id="btnAddExp" type="button" class="btn btn-secondary btn-sm">+ Add Experience</button>
-            </div>
-            <div id="experienceList"></div>
-          </div>
-
-          <!-- Section 5: Skills & Languages -->
-          <div class="glass-panel form-section">
-            <div class="form-section-header">
-              <h3><span>🌟</span> Skills & Languages</h3>
-            </div>
+            <!-- Row 4: Aadhaar Number, Mobile Number -->
             <div class="form-row">
               <div class="form-group">
-                <label for="skillsInput">Skills (Comma-separated)</label>
-                <input type="text" id="skillsInput" class="form-control" placeholder="e.g. Leadership, Marketing, Python, Excel">
+                <label for="aadhaarNumber">Aadhaar Numbe</label>
+                <input type="text" id="aadhaarNumber" class="form-control" placeholder="e.g. 1234 5678 9012">
               </div>
 
               <div class="form-group">
-                <label for="languagesInput">Languages Known (Comma-separated)</label>
-                <input type="text" id="languagesInput" class="form-control" placeholder="e.g. English, Hindi, Bengali">
+                <label for="mobileNumber">Mobile Numbe *</label>
+                <input type="tel" id="mobileNumber" class="form-control" placeholder="e.g. 9752443199" required>
               </div>
             </div>
+
+            <!-- Row 5: Residential Address -->
+            <div class="form-group">
+              <label for="residentialAddress">Residential Address</label>
+              <textarea id="residentialAddress" class="form-control" rows="2" placeholder="Full residential / postal address..."></textarea>
+            </div>
+
+            <!-- Row 6: Police Verification Dates -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="policeVerifDoneDate">Police Verif. Done Date</label>
+                <input type="date" id="policeVerifDoneDate" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="policeVerifDueDate">Police Verif. Due Date</label>
+                <input type="date" id="policeVerifDueDate" class="form-control">
+              </div>
+            </div>
+
+            <!-- Row 7: Medical Exam Dates -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="medicalExamDoneDate">Medical Exam. Done Date</label>
+                <input type="date" id="medicalExamDoneDate" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label for="medicalExamDueDate">Medical Exam. Due Date</label>
+                <input type="date" id="medicalExamDueDate" class="form-control">
+              </div>
+            </div>
+
+            <!-- Row 8: Identification Marks & Date of Joining in RR -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="identificationMarks">Identification Marks</label>
+                <input type="text" id="identificationMarks" class="form-control" placeholder="e.g. A mole on left forehead, cut mark on wrist">
+              </div>
+
+              <div class="form-group">
+                <label for="joiningDateRR">Date of Joining in RR</label>
+                <input type="date" id="joiningDateRR" class="form-control">
+              </div>
+            </div>
+
           </div>
 
           <!-- Submit Action Area -->

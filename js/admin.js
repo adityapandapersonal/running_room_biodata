@@ -71,15 +71,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoFileInput = document.getElementById("photoFileInput");
   const photoPreviewImg = document.getElementById("photoPreviewImg");
   const existingPhotoPath = document.getElementById("existingPhotoPath");
+
+  const signatureFileInput = document.getElementById("signatureFileInput");
+  const signaturePreviewImg = document.getElementById("signaturePreviewImg");
+  const existingSignaturePath = document.getElementById("existingSignaturePath");
+  let selectedSignatureFile = null;
+
   const btnSubmit = document.getElementById("btnSubmitForm");
   const btnSubmitText = document.getElementById("btnSubmitText");
   const btnReset = document.getElementById("btnResetForm");
-
-  // Repeaters
-  const btnAddEdu = document.getElementById("btnAddEdu");
-  const eduList = document.getElementById("educationList");
-  const btnAddExp = document.getElementById("btnAddExp");
-  const expList = document.getElementById("experienceList");
 
   // Sidebar Controls
   const btnDownloadQr = document.getElementById("btnDownloadQr");
@@ -118,6 +118,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const cfg = window.APP_CONFIG;
     return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${photoPath}?t=${Date.now()}`;
+  }
+
+  // Helper to resolve instant signature URL
+  function resolveSignatureUrl(sigPath) {
+    if (!sigPath) return "assets/signatures/sample-signature.svg";
+    if (sigPath.startsWith("http://") || sigPath.startsWith("https://") || sigPath.startsWith("data:")) {
+      return sigPath;
+    }
+    const cfg = window.APP_CONFIG;
+    return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${sigPath}?t=${Date.now()}`;
   }
 
   // ----------------------------------------------------
@@ -340,73 +350,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
-  // 8. Dynamic Repeaters (Education & Experience)
+  // 8. Employee Signature Upload & Camera Capture Preview
   // ----------------------------------------------------
-  if (btnAddEdu) btnAddEdu.addEventListener("click", () => addEducationRow());
-  if (btnAddExp) btnAddExp.addEventListener("click", () => addExperienceRow());
-
-  function addEducationRow(edu = {}) {
-    if (!eduList) return;
-    const row = document.createElement("div");
-    row.className = "repeater-item";
-    row.innerHTML = `
-      <button type="button" class="repeater-remove-btn" title="Remove">&times;</button>
-      <div class="form-row">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Degree / Qualification</label>
-          <input type="text" class="form-control edu-degree" value="${escapeAttr(edu.degree || "")}" placeholder="e.g. B.Tech Computer Science">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>School / University</label>
-          <input type="text" class="form-control edu-institution" value="${escapeAttr(edu.institution || "")}" placeholder="e.g. National Institute of Tech">
-        </div>
-      </div>
-      <div class="form-row" style="margin-top: 10px; margin-bottom: 0;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Year / Duration</label>
-          <input type="text" class="form-control edu-year" value="${escapeAttr(edu.year || "")}" placeholder="e.g. 2018 - 2022">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Grade / Percentage / Score</label>
-          <input type="text" class="form-control edu-score" value="${escapeAttr(edu.score || "")}" placeholder="e.g. 8.5 CGPA / 88%">
-        </div>
-      </div>
-    `;
-
-    row.querySelector(".repeater-remove-btn").onclick = () => row.remove();
-    eduList.appendChild(row);
-  }
-
-  function addExperienceRow(exp = {}) {
-    if (!expList) return;
-    const row = document.createElement("div");
-    row.className = "repeater-item";
-    row.innerHTML = `
-      <button type="button" class="repeater-remove-btn" title="Remove">&times;</button>
-      <div class="form-row">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Job Title / Role</label>
-          <input type="text" class="form-control exp-role" value="${escapeAttr(exp.role || "")}" placeholder="e.g. Project Manager">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Company / Organization</label>
-          <input type="text" class="form-control exp-company" value="${escapeAttr(exp.company || "")}" placeholder="e.g. ABC Solutions">
-        </div>
-      </div>
-      <div class="form-row" style="margin-top: 10px; margin-bottom: 0;">
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Duration</label>
-          <input type="text" class="form-control exp-duration" value="${escapeAttr(exp.duration || "")}" placeholder="e.g. 2021 - Present">
-        </div>
-        <div class="form-group" style="margin-bottom: 0;">
-          <label>Key Responsibilities</label>
-          <input type="text" class="form-control exp-desc" value="${escapeAttr(exp.description || "")}" placeholder="e.g. Led mobile development team">
-        </div>
-      </div>
-    `;
-
-    row.querySelector(".repeater-remove-btn").onclick = () => row.remove();
-    expList.appendChild(row);
+  if (signatureFileInput) {
+    signatureFileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        selectedSignatureFile = file;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (signaturePreviewImg) signaturePreviewImg.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
   }
 
   // ----------------------------------------------------
@@ -560,11 +517,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // 3. Particulars
-    setSafeVal("tagline", p.tagline || p.occupation || "");
-    setSafeVal("phone", p.phone || "");
-    setSafeVal("whatsapp", p.whatsapp || p.phone || "");
-    setSafeVal("email", p.email || "");
+    // 3. Official Running Room Particulars (18 fields)
+    setSafeVal("idCardNo", p.idCardNo || "");
+    setSafeVal("designation", p.designation || "");
+    setSafeVal("fatherName", p.fatherName || "");
+    setSafeVal("motherName", p.motherName || "");
+    setSafeVal("husbandName", p.husbandName || "");
 
     // Normalize DOB for HTML5 <input type="date"> (requires YYYY-MM-DD)
     let cleanDob = (p.dob || "").trim();
@@ -577,17 +535,19 @@ document.addEventListener("DOMContentLoaded", () => {
     setSafeVal("dob", cleanDob.slice(0, 10));
 
     setSafeVal("gender", p.gender || "");
-    setSafeVal("bloodGroup", p.bloodGroup || "");
-    setSafeVal("address", p.address || "");
-    setSafeVal("about", p.about || "");
+    setSafeVal("maritalStatus", p.maritalStatus || "");
+    setSafeVal("aadhaarNumber", p.aadhaarNumber || "");
+    setSafeVal("mobileNumber", p.mobileNumber || p.phone || "");
+    setSafeVal("residentialAddress", p.residentialAddress || p.address || "");
 
-    // 4. Skills & Languages
-    const skillsText = Array.isArray(p.skills) ? p.skills.join(", ") : (p.skills || "");
-    const languagesText = Array.isArray(p.languages) ? p.languages.join(", ") : (p.languages || "");
-    setSafeVal("skillsInput", skillsText);
-    setSafeVal("languagesInput", languagesText);
+    setSafeVal("policeVerifDoneDate", (p.policeVerifDoneDate || "").slice(0, 10));
+    setSafeVal("policeVerifDueDate", (p.policeVerifDueDate || "").slice(0, 10));
+    setSafeVal("medicalExamDoneDate", (p.medicalExamDoneDate || "").slice(0, 10));
+    setSafeVal("medicalExamDueDate", (p.medicalExamDueDate || "").slice(0, 10));
+    setSafeVal("identificationMarks", p.identificationMarks || "");
+    setSafeVal("joiningDateRR", (p.joiningDateRR || "").slice(0, 10));
 
-    // 5. Photo Preview (with instant raw URL)
+    // 4. Photo Preview (with instant raw URL)
     if (existingPhotoPath) {
       existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
     }
@@ -599,21 +559,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     selectedPhotoFile = null;
 
-    // 6. Repeaters: Education
-    if (eduList) {
-      eduList.innerHTML = "";
-      if (Array.isArray(p.education) && p.education.length > 0) {
-        p.education.forEach((edu) => addEducationRow(edu));
-      }
+    // 5. Signature of Employee Preview
+    if (existingSignaturePath) {
+      existingSignaturePath.value = p.signature || "assets/signatures/sample-signature.svg";
     }
-
-    // 7. Repeaters: Experience
-    if (expList) {
-      expList.innerHTML = "";
-      if (Array.isArray(p.experience) && p.experience.length > 0) {
-        p.experience.forEach((exp) => addExperienceRow(exp));
-      }
+    if (signaturePreviewImg) {
+      signaturePreviewImg.src = resolveSignatureUrl(p.signature);
+      signaturePreviewImg.onerror = () => {
+        signaturePreviewImg.src = "assets/signatures/sample-signature.svg";
+      };
     }
+    selectedSignatureFile = null;
 
     // 8. Update Live QR Code and Permalinks
     if (p.id) {
@@ -723,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
       openProgressModal();
       setStepState("validate", "running", "Validating details...");
 
-      // Prepare Profile Object
+      // Prepare Profile Object with all 18 Running Room particulars
       const getVal = (idStr) => {
         const el = document.getElementById(idStr);
         return el ? el.value.trim() : "";
@@ -731,21 +687,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const profileData = {
         id: id,
+        idCardNo: getVal("idCardNo"),
         fullName: fullNameInput ? fullNameInput.value.trim() : "",
-        tagline: getVal("tagline"),
-        phone: getVal("phone"),
-        whatsapp: getVal("whatsapp") || getVal("phone"),
-        email: getVal("email"),
+        designation: getVal("designation"),
+        fatherName: getVal("fatherName"),
+        motherName: getVal("motherName"),
+        husbandName: getVal("husbandName"),
         dob: getVal("dob"),
         gender: getVal("gender"),
-        bloodGroup: getVal("bloodGroup"),
-        address: getVal("address"),
-        about: getVal("about"),
+        maritalStatus: getVal("maritalStatus"),
+        aadhaarNumber: getVal("aadhaarNumber"),
+        mobileNumber: getVal("mobileNumber"),
+        phone: getVal("mobileNumber"),
+        residentialAddress: getVal("residentialAddress"),
+        address: getVal("residentialAddress"),
+        policeVerifDoneDate: getVal("policeVerifDoneDate"),
+        policeVerifDueDate: getVal("policeVerifDueDate"),
+        medicalExamDoneDate: getVal("medicalExamDoneDate"),
+        medicalExamDueDate: getVal("medicalExamDueDate"),
+        identificationMarks: getVal("identificationMarks"),
+        joiningDateRR: getVal("joiningDateRR"),
         photo: (existingPhotoPath && existingPhotoPath.value) ? existingPhotoPath.value : "assets/photos/demo-aditya.svg",
-        education: collectEducationData(),
-        experience: collectExperienceData(),
-        skills: parseCommaSeparated(getVal("skillsInput")),
-        languages: parseCommaSeparated(getVal("languagesInput")),
+        signature: (existingSignaturePath && existingSignaturePath.value) ? existingSignaturePath.value : "assets/signatures/sample-signature.svg",
         updatedAt: new Date().toISOString().split("T")[0]
       };
 
@@ -757,8 +720,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await ghClient.saveProfile(
           profileData,
           selectedPhotoFile,
+          selectedSignatureFile,
           (step, status, detail) => {
-            if (step === "photo_process") {
+            if (step === "photo_process" || step === "sig_process") {
               setStepState("photo", status, detail);
             } else if (step === "json_commit") {
               setStepState("json", status, detail);
@@ -773,6 +737,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (result.photoPath && existingPhotoPath) {
           existingPhotoPath.value = result.photoPath;
           if (photoPreviewImg) photoPreviewImg.src = resolvePhotoUrl(result.photoPath);
+        }
+        if (result.signaturePath && existingSignaturePath) {
+          existingSignaturePath.value = result.signaturePath;
+          if (signaturePreviewImg) signaturePreviewImg.src = resolveSignatureUrl(result.signaturePath);
         }
 
         setStepState("qr", "done", `Live permanent link: ${result.profileUrl}`);
@@ -799,50 +767,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function collectEducationData() {
-    if (!eduList) return [];
-    const rows = eduList.querySelectorAll(".repeater-item");
-    const arr = [];
-    rows.forEach(r => {
-      const degree = r.querySelector(".edu-degree")?.value.trim() || "";
-      const institution = r.querySelector(".edu-institution")?.value.trim() || "";
-      const year = r.querySelector(".edu-year")?.value.trim() || "";
-      const score = r.querySelector(".edu-score")?.value.trim() || "";
-      if (degree || institution) {
-        arr.push({ degree, institution, year, score });
-      }
-    });
-    return arr;
-  }
-
-  function collectExperienceData() {
-    if (!expList) return [];
-    const rows = expList.querySelectorAll(".repeater-item");
-    const arr = [];
-    rows.forEach(r => {
-      const role = r.querySelector(".exp-role")?.value.trim() || "";
-      const company = r.querySelector(".exp-company")?.value.trim() || "";
-      const duration = r.querySelector(".exp-duration")?.value.trim() || "";
-      const description = r.querySelector(".exp-desc")?.value.trim() || "";
-      if (role || company) {
-        arr.push({ role, company, duration, description });
-      }
-    });
-    return arr;
-  }
-
-  function parseCommaSeparated(str) {
-    if (!str) return [];
-    return str.split(",").map(s => s.trim()).filter(Boolean);
-  }
-
   function resetForm() {
     if (biodataForm) biodataForm.reset();
-    if (eduList) eduList.innerHTML = "";
-    if (expList) expList.innerHTML = "";
     if (existingPhotoPath) existingPhotoPath.value = "assets/photos/demo-aditya.svg";
     if (photoPreviewImg) photoPreviewImg.src = "assets/photos/demo-aditya.svg";
     selectedPhotoFile = null;
+    if (existingSignaturePath) existingSignaturePath.value = "assets/signatures/sample-signature.svg";
+    if (signaturePreviewImg) signaturePreviewImg.src = "assets/signatures/sample-signature.svg";
+    selectedSignatureFile = null;
     if (personIdInput) {
       delete personIdInput.dataset.manuallyEdited;
       personIdInput.readOnly = false;

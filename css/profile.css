@@ -267,6 +267,170 @@
   margin-top: 6px;
 }
 
+/* ==========================================================================
+   Running Room Official Biodata Table & Signature Styles
+   ========================================================================== */
+.id-card-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: var(--radius-full);
+  font-size: 0.92rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.rr-record-wrapper {
+  margin-bottom: 24px;
+}
+
+.rr-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.rr-confidential-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+}
+
+.rr-biodata-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(15, 23, 42, 0.55);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-glass-bright);
+  box-shadow: var(--shadow-md);
+}
+
+.rr-biodata-row {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 12px 18px;
+  align-items: flex-start;
+  transition: background 0.2s ease;
+}
+
+.rr-biodata-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.rr-biodata-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rr-biodata-row:last-child {
+  border-bottom: none;
+}
+
+.rr-field-label {
+  flex: 0 0 240px;
+  font-weight: 700;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+  line-height: 1.4;
+}
+
+.rr-field-value {
+  flex: 1;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.rr-field-value strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Signature of Employee Section */
+.employee-signature-section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid var(--border-glass-bright);
+  border-radius: var(--radius-lg);
+  background: rgba(15, 23, 42, 0.45);
+  box-shadow: var(--shadow-md);
+}
+
+.sig-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sig-label {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #f8fafc;
+}
+
+.sig-badge {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.sig-display-box {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 95px;
+  border: 2px dashed #cbd5e1;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.signature-img {
+  max-height: 100px;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  filter: contrast(115%);
+}
+
+@media (max-width: 640px) {
+  .rr-biodata-row {
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 14px;
+  }
+  .rr-field-label {
+    flex: unset;
+    font-size: 0.88rem;
+    color: #94a3b8;
+  }
+  .rr-field-value {
+    font-size: 0.95rem;
+    color: #f8fafc;
+  }
+}
+
 /* Skills & Language Tags */
 .tags-wrapper {
   display: flex;

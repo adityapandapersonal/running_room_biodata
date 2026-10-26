@@ -221,9 +221,34 @@ class GitHubClient {
   }
 
   /**
-   * Save complete biodata profile JSON, upload photo, and update registry with live progress callback
+   * Upload employee signature to assets/signatures/{id}.[ext]
    */
-  async saveProfile(personData, imageFile = null, progressCallback = null) {
+  async uploadSignature(personId, imageFile, onProgress = null) {
+    const extension = imageFile.name.split(".").pop().toLowerCase() || "png";
+    const targetPath = `assets/signatures/${personId}.${extension}`;
+    
+    if (onProgress) onProgress("encoding_signature", "Converting signature to Base64...");
+    const base64Content = await this.fileToBase64(imageFile);
+
+    if (onProgress) onProgress("checking_sig_sha", "Checking existing signature on GitHub...");
+    const existing = await this.getFile(targetPath).catch(() => null);
+    const sha = existing ? existing.sha : null;
+
+    if (onProgress) onProgress("committing_signature", "Pushing employee signature to GitHub...");
+    await this.commitFile(
+      targetPath,
+      base64Content,
+      `Upload employee signature for ${personId}`,
+      sha
+    );
+
+    return targetPath;
+  }
+
+  /**
+   * Save complete biodata profile JSON, upload photo and signature, and update registry
+   */
+  async saveProfile(personData, imageFile = null, signatureFile = null, progressCallback = null) {
     const id = personData.id;
     if (!id) throw new Error("Person ID is required.");
 
@@ -235,6 +260,7 @@ class GitHubClient {
     };
 
     let photoPath = personData.photo;
+    let signaturePath = personData.signature;
 
     // STEP 1: Process and upload photo (if provided)
     if (imageFile) {
@@ -246,6 +272,18 @@ class GitHubClient {
       updateProgress("photo_process", "done", `Photo committed to ${photoPath}`);
     } else {
       updateProgress("photo_process", "skipped", "Using existing photo link");
+    }
+
+    // STEP 1b: Process and upload signature (if provided)
+    if (signatureFile) {
+      updateProgress("sig_process", "running", "Processing employee signature...");
+      signaturePath = await this.uploadSignature(id, signatureFile, (subStep, subDetail) => {
+        updateProgress("sig_process", "running", subDetail);
+      });
+      personData.signature = signaturePath;
+      updateProgress("sig_process", "done", `Signature committed to ${signaturePath}`);
+    } else {
+      updateProgress("sig_process", "skipped", "Using existing signature");
     }
 
     // STEP 2: Commit profile JSON
@@ -261,7 +299,7 @@ class GitHubClient {
     await this.commitFile(
       profilePath,
       jsonBase64,
-      `Update biodata for ${personData.fullName} (${id})`,
+      `Update Running Room biodata for ${personData.fullName} (${id})`,
       profileSha
     );
     updateProgress("json_commit", "done", `Profile JSON committed successfully`);
@@ -284,6 +322,7 @@ class GitHubClient {
       success: true,
       id: id,
       photoPath: photoPath,
+      signaturePath: signaturePath,
       profileUrl: profileUrl
     };
   }
@@ -314,11 +353,12 @@ class GitHubClient {
     const entryIndex = registry.profiles.findIndex((p) => p.id === personData.id);
     const newEntry = {
       id: personData.id,
-      fullName: personData.fullName,
-      occupation: personData.tagline || personData.occupation || "",
-      phone: personData.phone || "",
-      email: personData.email || "",
+      idCardNo: personData.idCardNo || "",
+      fullName: personData.fullName || "",
+      designation: personData.designation || personData.tagline || "",
+      phone: personData.mobileNumber || personData.phone || "",
       photo: personData.photo || "",
+      signature: personData.signature || "",
       updatedAt: personData.updatedAt || new Date().toISOString().split("T")[0]
     };
 
@@ -453,17 +493,26 @@ class GitHubClient {
         console.warn(`[GitHubClient] Using registry summary fallback for '${cleanId}'.`);
         const fallbackProfile = {
           id: match.id,
+          idCardNo: match.idCardNo || "",
           fullName: match.fullName || match.id,
-          tagline: match.occupation || "",
-          occupation: match.occupation || "",
-          phone: match.phone || "",
-          whatsapp: match.phone || "",
-          email: match.email || "",
+          designation: match.designation || match.occupation || "",
+          fatherName: match.fatherName || "",
+          motherName: match.motherName || "",
+          husbandName: match.husbandName || "",
+          dob: match.dob || "",
+          gender: match.gender || "Male",
+          maritalStatus: match.maritalStatus || "Unmarried",
+          aadhaarNumber: match.aadhaarNumber || "",
+          mobileNumber: match.phone || match.mobileNumber || "",
+          residentialAddress: match.residentialAddress || "",
+          policeVerifDoneDate: match.policeVerifDoneDate || "",
+          policeVerifDueDate: match.policeVerifDueDate || "",
+          medicalExamDoneDate: match.medicalExamDoneDate || "",
+          medicalExamDueDate: match.medicalExamDueDate || "",
+          identificationMarks: match.identificationMarks || "",
+          joiningDateRR: match.joiningDateRR || "",
           photo: match.photo || "assets/photos/demo-aditya.svg",
-          education: [],
-          experience: [],
-          skills: [],
-          languages: [],
+          signature: match.signature || "assets/signatures/sample-signature.svg",
           updatedAt: match.updatedAt || ""
         };
         this._profileCache.set(cleanId, fallbackProfile);
