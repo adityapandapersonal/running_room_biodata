@@ -30,13 +30,29 @@ function renderProfile(p, id) {
   // Update browser document title
   document.title = `${p.fullName || "Biodata"} - Profile Card`;
 
-  // Avatar Photo
+  // Helper to resolve instant photo URL without waiting for GitHub Pages rebuild
+  function resolvePhotoUrl(photoPath) {
+    if (!photoPath) return "assets/photos/demo-aditya.svg";
+    if (photoPath.startsWith("http://") || photoPath.startsWith("https://") || photoPath.startsWith("data:")) {
+      return photoPath;
+    }
+    const cfg = window.APP_CONFIG;
+    return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${photoPath}?t=${Date.now()}`;
+  }
+
+  // Avatar Photo (Instant Raw CDN fetch with fallbacks)
   const avatarEl = document.getElementById("profileAvatar");
   if (avatarEl) {
-    avatarEl.src = p.photo || "assets/photos/demo-aditya.svg";
+    const instantUrl = resolvePhotoUrl(p.photo);
+    avatarEl.src = instantUrl;
     avatarEl.alt = p.fullName || "Profile Photo";
     avatarEl.onerror = () => {
-      avatarEl.src = "assets/photos/demo-aditya.svg";
+      // Fallback to relative path if raw fetch was blocked, else default SVG
+      if (avatarEl.src !== p.photo && p.photo) {
+        avatarEl.src = p.photo;
+      } else {
+        avatarEl.src = "assets/photos/demo-aditya.svg";
+      }
     };
   }
 

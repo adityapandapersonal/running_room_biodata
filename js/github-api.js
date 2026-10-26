@@ -1,21 +1,61 @@
 /**
  * GitHub REST API Client for Biodata QR System
- * Handles secure commits, profile JSON creation, image upload, and registry updates.
+ * Robust cross-host synchronization with Raw fallback, TextDecoder, and progress reporting.
  */
 class GitHubClient {
   constructor(config) {
     this.config = config || window.APP_CONFIG;
+    // Restore persistent repository configs from localStorage if available
+    this.restorePersistedConfig();
+  }
+
+  restorePersistedConfig() {
+    const savedUser = localStorage.getItem("biodata_github_username");
+    const savedRepo = localStorage.getItem("biodata_github_repo");
+    const savedBranch = localStorage.getItem("biodata_github_branch");
+
+    if (savedUser) this.config.githubUsername = savedUser;
+    if (savedRepo) this.config.githubRepo = savedRepo;
+    if (savedBranch) this.config.branch = savedBranch;
+  }
+
+  persistConfig(username, repo, branch) {
+    if (username) {
+      this.config.githubUsername = username.trim();
+      localStorage.setItem("biodata_github_username", this.config.githubUsername);
+    }
+    if (repo) {
+      this.config.githubRepo = repo.trim();
+      localStorage.setItem("biodata_github_repo", this.config.githubRepo);
+    }
+    if (branch) {
+      this.config.branch = branch.trim();
+      localStorage.setItem("biodata_github_branch", this.config.branch);
+    }
   }
 
   getToken() {
-    return localStorage.getItem(this.config.tokenStorageKey) || "";
+    // 1. Check localStorage
+    let token = localStorage.getItem(this.config.tokenStorageKey) || "";
+    // 2. Check sessionStorage
+    if (!token) {
+      token = sessionStorage.getItem(this.config.tokenStorageKey) || "";
+    }
+    // 3. Check APP_CONFIG defaultGithubToken
+    if (!token && this.config.defaultGithubToken) {
+      token = this.config.defaultGithubToken.trim();
+    }
+    return token;
   }
 
   setToken(token) {
-    if (token) {
-      localStorage.setItem(this.config.tokenStorageKey, token.trim());
+    if (token && token.trim()) {
+      const cleanToken = token.trim();
+      localStorage.setItem(this.config.tokenStorageKey, cleanToken);
+      sessionStorage.setItem(this.config.tokenStorageKey, cleanToken);
     } else {
       localStorage.removeItem(this.config.tokenStorageKey);
+      sessionStorage.removeItem(this.config.tokenStorageKey);
     }
   }
 
@@ -33,6 +73,26 @@ class GitHubClient {
       headers["Authorization"] = `Bearer ${token}`;
     }
     return headers;
+  }
+
+  decodeBase64(base64Str) {
+    try {
+      const binary = atob(base64Str.replace(/\s/g, ""));
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    } catch (e) {
+      // Fallback
+      return decodeURIComponent(escape(atob(base64Str.replace(/\s/g, ""))));
+    }
+  }
+
+  encodeBase64(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
   }
 
   /**
@@ -62,7 +122,7 @@ class GitHubClient {
    * Get file info and SHA from GitHub repo
    */
   async getFile(path) {
-    const url = `https://api.github.com/repos/${this.config.githubUsername}/${this.config.githubRepo}/contents/${path}?ref=${this.config.branch}`;
+    const url = `https://api.github.com/repos/${this.config.githubUsername}/${this.config.githubRepo}/contents/${path}?ref=${this.config.branch}&t=${Date.now()}`;
     const res = await fetch(url, { headers: this.getHeaders() });
     
     if (res.status === 404) {
@@ -105,14 +165,13 @@ class GitHubClient {
   }
 
   /**
-   * Convert file/Blob to Base64 (stripping data URL prefix for GitHub API)
+   * Convert file to Base64 (stripping data URL prefix for GitHub API)
    */
   fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result;
-        // Strip data:image/...;base64,
         const base64 = result.split(",")[1];
         resolve(base64);
       };
@@ -124,15 +183,18 @@ class GitHubClient {
   /**
    * Upload person photo to assets/photos/{id}.[ext]
    */
-  async uploadPhoto(personId, imageFile) {
+  async uploadPhoto(personId, imageFile, onProgress = null) {
     const extension = imageFile.name.split(".").pop().toLowerCase() || "jpg";
     const targetPath = `assets/photos/${personId}.${extension}`;
     
-    // Check if photo already exists to obtain SHA
+    if (onProgress) onProgress("encoding", "Converting photo to Base64...");
+    const base64Content = await this.fileToBase64(imageFile);
+
+    if (onProgress) onProgress("checking_sha", "Checking existing photo on GitHub...");
     const existing = await this.getFile(targetPath).catch(() => null);
     const sha = existing ? existing.sha : null;
 
-    const base64Content = await this.fileToBase64(imageFile);
+    if (onProgress) onProgress("committing_photo", "Pushing photo to GitHub repository...");
     await this.commitFile(
       targetPath,
       base64Content,
@@ -144,44 +206,65 @@ class GitHubClient {
   }
 
   /**
-   * Save complete biodata profile JSON and update registry
+   * Save complete biodata profile JSON, upload photo, and update registry with live progress callback
    */
-  async saveProfile(personData, imageFile = null) {
+  async saveProfile(personData, imageFile = null, progressCallback = null) {
     const id = personData.id;
     if (!id) throw new Error("Person ID is required.");
 
+    // Callback helper
+    const updateProgress = (step, status, detail) => {
+      if (typeof progressCallback === "function") {
+        progressCallback(step, status, detail);
+      }
+    };
+
     let photoPath = personData.photo;
 
-    // 1. Upload photo if a new file is provided
+    // STEP 1: Process and upload photo (if provided)
     if (imageFile) {
-      photoPath = await this.uploadPhoto(id, imageFile);
+      updateProgress("photo_process", "running", "Converting photo to Base64...");
+      photoPath = await this.uploadPhoto(id, imageFile, (subStep, subDetail) => {
+        updateProgress("photo_process", "running", subDetail);
+      });
       personData.photo = photoPath;
+      updateProgress("photo_process", "done", `Photo committed to ${photoPath}`);
+    } else {
+      updateProgress("photo_process", "skipped", "Using existing photo link");
     }
 
-    // 2. Commit profile JSON to data/profiles/{id}.json
+    // STEP 2: Commit profile JSON
+    updateProgress("json_commit", "running", `Preparing data/profiles/${id}.json...`);
     const profilePath = `data/profiles/${id}.json`;
     const existingProfile = await this.getFile(profilePath).catch(() => null);
     const profileSha = existingProfile ? existingProfile.sha : null;
 
     const jsonString = JSON.stringify(personData, null, 2);
-    // Standard UTF-8 safe base64 encoding
-    const jsonBase64 = btoa(unescape(encodeURIComponent(jsonString)));
+    const jsonBase64 = this.encodeBase64(jsonString);
 
+    updateProgress("json_commit", "running", `Committing data/profiles/${id}.json to GitHub...`);
     await this.commitFile(
       profilePath,
       jsonBase64,
       `Update biodata for ${personData.fullName} (${id})`,
       profileSha
     );
+    updateProgress("json_commit", "done", `Profile JSON committed successfully`);
 
-    // 3. Update data/registry.json so the person appears in the admin list
+    // STEP 3: Update registry.json
+    updateProgress("registry_sync", "running", "Synchronizing master registry.json...");
     await this.updateRegistry(personData);
+    updateProgress("registry_sync", "done", "Registry updated");
+
+    // STEP 4: Permanent Link calculation
+    const profileUrl = `${this.config.getBaseUrl()}?id=${id}`;
+    updateProgress("qr_ready", "done", "Permanent Dynamic QR Code is ready!");
 
     return {
       success: true,
       id: id,
       photoPath: photoPath,
-      profileUrl: `${this.config.getBaseUrl()}?id=${id}`
+      profileUrl: profileUrl
     };
   }
 
@@ -197,7 +280,7 @@ class GitHubClient {
       const existing = await this.getFile(registryPath);
       if (existing && existing.content) {
         registrySha = existing.sha;
-        const decoded = decodeURIComponent(escape(atob(existing.content.replace(/\s/g, ""))));
+        const decoded = this.decodeBase64(existing.content);
         registry = JSON.parse(decoded);
       }
     } catch (e) {
@@ -208,7 +291,6 @@ class GitHubClient {
       registry.profiles = [];
     }
 
-    // Upsert person entry
     const entryIndex = registry.profiles.findIndex((p) => p.id === personData.id);
     const newEntry = {
       id: personData.id,
@@ -227,7 +309,7 @@ class GitHubClient {
     }
 
     const regJson = JSON.stringify(registry, null, 2);
-    const regBase64 = btoa(unescape(encodeURIComponent(regJson)));
+    const regBase64 = this.encodeBase64(regJson);
 
     await this.commitFile(
       registryPath,
@@ -239,32 +321,63 @@ class GitHubClient {
 
   /**
    * Fetch all registered profiles for admin dropdown
+   * Priority: Raw GitHub (fastest & no cache lag) -> GitHub API -> Local file
    */
   async getRegistry() {
-    // Try fetching via raw or API
+    // 1. Raw GitHub fetch (fastest, zero CDN lag)
     try {
-      // 1. Try local or standard fetch first (fastest)
+      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/registry.json?t=${Date.now()}`;
+      const res = await fetch(rawUrl, { cache: "no-store" });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (_) {}
+
+    // 2. GitHub REST API fallback
+    try {
+      const file = await this.getFile("data/registry.json");
+      if (file && file.content) {
+        const decoded = this.decodeBase64(file.content);
+        return JSON.parse(decoded);
+      }
+    } catch (_) {}
+
+    // 3. Local relative path fallback
+    try {
       const res = await fetch("data/registry.json?t=" + Date.now());
       if (res.ok) {
         return await res.json();
       }
     } catch (_) {}
 
-    // 2. Fallback to GitHub API if local fetch failed
-    const file = await this.getFile("data/registry.json").catch(() => null);
-    if (file && file.content) {
-      const decoded = decodeURIComponent(escape(atob(file.content.replace(/\s/g, ""))));
-      return JSON.parse(decoded);
-    }
-
     return { profiles: [] };
   }
 
   /**
    * Fetch a single profile by ID
+   * Priority: Raw GitHub (fastest & always fresh) -> GitHub API -> Local file
    */
   async getProfileById(id) {
-    // 1. Try standard path fetch
+    // 1. Raw GitHub fetch (Works everywhere: ByetHost, Local, etc. with zero build delay)
+    try {
+      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${encodeURIComponent(id)}.json?t=${Date.now()}`;
+      const res = await fetch(rawUrl, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        return data;
+      }
+    } catch (_) {}
+
+    // 2. GitHub REST API fallback
+    try {
+      const file = await this.getFile(`data/profiles/${id}.json`);
+      if (file && file.content) {
+        const decoded = this.decodeBase64(file.content);
+        return JSON.parse(decoded);
+      }
+    } catch (_) {}
+
+    // 3. Local relative path fallback
     try {
       const res = await fetch(`data/profiles/${id}.json?t=` + Date.now());
       if (res.ok) {
@@ -272,14 +385,7 @@ class GitHubClient {
       }
     } catch (_) {}
 
-    // 2. Fallback to GitHub API
-    const file = await this.getFile(`data/profiles/${id}.json`).catch(() => null);
-    if (file && file.content) {
-      const decoded = decodeURIComponent(escape(atob(file.content.replace(/\s/g, ""))));
-      return JSON.parse(decoded);
-    }
-
-    throw new Error(`Profile '${id}' not found.`);
+    throw new Error(`Profile '${id}' could not be loaded from GitHub.`);
   }
 }
 

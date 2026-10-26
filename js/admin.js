@@ -1,6 +1,7 @@
 /**
  * Admin Studio Controller
- * Handles Login Gate Authentication, Profile Creation, Editing, Photo Uploads, GitHub API Commits, and QR Generation.
+ * Handles Persistent Login, Profile Creation, Editing, Photo Uploads,
+ * GitHub REST API Commits, Dynamic QR Studio, and Live Checkpoints Modal.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -9,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedPhotoFile = null;
 
   // ----------------------------------------------------
-  // 1. Login Gate & Authentication Handling
+  // 1. Persistent Login Gate & Authentication Handling
   // ----------------------------------------------------
   const loginGateOverlay = document.getElementById("loginGateOverlay");
   const adminApp = document.getElementById("adminApp");
@@ -21,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnTogglePassword = document.getElementById("btnTogglePassword");
   const btnLogout = document.getElementById("btnLogout");
 
-  // Check if authentication is enabled
   const authConfig = window.APP_CONFIG.adminAuth || { enabled: false };
 
   function checkSession() {
@@ -29,7 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockDashboard();
       return;
     }
-    const isAuthenticated = sessionStorage.getItem(authConfig.sessionKey) === "true";
+    // Use localStorage so login persists across page refreshes and tabs!
+    const isAuthenticated = localStorage.getItem(authConfig.sessionKey) === "true";
     if (isAuthenticated) {
       unlockDashboard();
     } else {
@@ -38,61 +39,61 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function unlockDashboard() {
-    loginGateOverlay.style.display = "none";
-    adminApp.style.display = "block";
+    if (loginGateOverlay) loginGateOverlay.style.display = "none";
+    if (adminApp) adminApp.style.display = "block";
     initDashboard();
   }
 
   function lockDashboard() {
-    loginGateOverlay.style.display = "flex";
-    adminApp.style.display = "none";
-    loginUsername.value = "";
-    loginPassword.value = "";
-    loginErrorMsg.style.display = "none";
+    if (loginGateOverlay) loginGateOverlay.style.display = "flex";
+    if (adminApp) adminApp.style.display = "none";
+    if (loginUsername) loginUsername.value = "";
+    if (loginPassword) loginPassword.value = "";
+    if (loginErrorMsg) loginErrorMsg.style.display = "none";
   }
 
-  loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const enteredUser = loginUsername.value.trim();
-    const enteredPass = loginPassword.value;
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const enteredUser = loginUsername.value.trim();
+      const enteredPass = loginPassword.value;
 
-    if (enteredUser === authConfig.username && enteredPass === authConfig.password) {
-      sessionStorage.setItem(authConfig.sessionKey, "true");
-      unlockDashboard();
-      showToast(`Welcome back, ${enteredUser}!`, "success");
-    } else {
-      // Trigger error shake animation
-      loginErrorMsg.style.display = "block";
-      loginCard.classList.remove("shake-anim");
-      void loginCard.offsetWidth; // Force CSS reflow
-      loginCard.classList.add("shake-anim");
-    }
-  });
+      if (enteredUser === authConfig.username && enteredPass === authConfig.password) {
+        localStorage.setItem(authConfig.sessionKey, "true");
+        unlockDashboard();
+        showToast(`Welcome back, ${enteredUser}!`, "success");
+      } else {
+        loginErrorMsg.style.display = "block";
+        loginCard.classList.remove("shake-anim");
+        void loginCard.offsetWidth;
+        loginCard.classList.add("shake-anim");
+      }
+    });
+  }
 
-  btnTogglePassword.addEventListener("click", () => {
-    const isPass = loginPassword.type === "password";
-    loginPassword.type = isPass ? "text" : "password";
-    btnTogglePassword.textContent = isPass ? "🙈" : "👁️";
-  });
+  if (btnTogglePassword) {
+    btnTogglePassword.addEventListener("click", () => {
+      const isPass = loginPassword.type === "password";
+      loginPassword.type = isPass ? "text" : "password";
+      btnTogglePassword.textContent = isPass ? "🙈" : "👁️";
+    });
+  }
 
-  btnLogout.addEventListener("click", () => {
-    sessionStorage.removeItem(authConfig.sessionKey);
-    lockDashboard();
-    showToast("Logged out successfully.", "info");
-  });
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      localStorage.removeItem(authConfig.sessionKey);
+      lockDashboard();
+      showToast("Logged out successfully.", "info");
+    });
+  }
 
-  // Run initial session check
+  // Check login state immediately
   checkSession();
 
   // ----------------------------------------------------
   // 2. Dashboard Logic (Initialized on Unlock)
   // ----------------------------------------------------
   function initDashboard() {
-    // If defaultGithubToken configured in config.js, set it
-    if (window.APP_CONFIG.defaultGithubToken && !ghClient.hasToken()) {
-      ghClient.setToken(window.APP_CONFIG.defaultGithubToken);
-    }
-
     checkGitHubConnection();
     loadSettingsIntoModal();
     updateQrCode(personIdInput.value || "demo-person");
@@ -108,6 +109,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const tabEdit = document.getElementById("tabModeEdit");
   const editSelectorSec = document.getElementById("editSelectorSection");
   const selectPerson = document.getElementById("selectExistingPerson");
+  const btnRefreshRegistry = document.getElementById("btnRefreshRegistry");
+  const btnForceLoadPerson = document.getElementById("btnForceLoadPerson");
 
   const personIdInput = document.getElementById("personId");
   const fullNameInput = document.getElementById("fullName");
@@ -143,27 +146,51 @@ document.addEventListener("DOMContentLoaded", () => {
   const cfgBranch = document.getElementById("cfgBranch");
   const cfgToken = document.getElementById("cfgToken");
 
+  // Progress Modal Elements
+  const progressModal = document.getElementById("progressModal");
+  const progressFooter = document.getElementById("progressFooter");
+  const progressErrorBox = document.getElementById("progressErrorBox");
+  const progressErrorText = document.getElementById("progressErrorText");
+  const progressErrorActions = document.getElementById("progressErrorActions");
+  const btnProgressViewProfile = document.getElementById("btnProgressViewProfile");
+  const btnCloseProgressModal = document.getElementById("btnCloseProgressModal");
+  const btnCloseProgressModalErr = document.getElementById("btnCloseProgressModalErr");
+
+  // Helper to resolve instant photo URL without waiting for GitHub Pages build
+  function resolvePhotoUrl(photoPath) {
+    if (!photoPath) return "assets/photos/demo-aditya.svg";
+    if (photoPath.startsWith("http://") || photoPath.startsWith("https://") || photoPath.startsWith("data:")) {
+      return photoPath;
+    }
+    const cfg = window.APP_CONFIG;
+    return `https://raw.githubusercontent.com/${cfg.githubUsername}/${cfg.githubRepo}/${cfg.branch}/${photoPath}?t=${Date.now()}`;
+  }
+
   // ----------------------------------------------------
   // Mode Switching (New vs Edit)
   // ----------------------------------------------------
-  tabNew.addEventListener("click", () => {
-    currentMode = "new";
-    tabNew.classList.add("active");
-    tabEdit.classList.remove("active");
-    editSelectorSec.style.display = "none";
-    personIdInput.readOnly = false;
-    btnSubmitText.textContent = "💾 Save & Commit to GitHub";
-    resetForm();
-  });
+  if (tabNew) {
+    tabNew.addEventListener("click", () => {
+      currentMode = "new";
+      tabNew.classList.add("active");
+      tabEdit.classList.remove("active");
+      editSelectorSec.style.display = "none";
+      personIdInput.readOnly = false;
+      btnSubmitText.textContent = "💾 Save & Commit to GitHub";
+      resetForm();
+    });
+  }
 
-  tabEdit.addEventListener("click", async () => {
-    currentMode = "edit";
-    tabEdit.classList.add("active");
-    tabNew.classList.remove("active");
-    editSelectorSec.style.display = "block";
-    btnSubmitText.textContent = "🔄 Update & Commit Changes";
-    await populateRegistryDropdown();
-  });
+  if (tabEdit) {
+    tabEdit.addEventListener("click", async () => {
+      currentMode = "edit";
+      tabEdit.classList.add("active");
+      tabNew.classList.remove("active");
+      editSelectorSec.style.display = "block";
+      btnSubmitText.textContent = "🔄 Update & Commit Changes";
+      await populateRegistryDropdown();
+    });
+  }
 
   // ----------------------------------------------------
   // Dynamic Slug / ID Generation
@@ -328,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Dropdown for Editing Existing Profiles
   // ----------------------------------------------------
   async function populateRegistryDropdown() {
-    selectPerson.innerHTML = '<option value="">Loading registered persons...</option>';
+    selectPerson.innerHTML = '<option value="">Loading registered persons from GitHub...</option>';
     try {
       const reg = await ghClient.getRegistry();
       selectPerson.innerHTML = '<option value="">-- Choose a person to edit --</option>';
@@ -339,6 +366,12 @@ document.addEventListener("DOMContentLoaded", () => {
           opt.textContent = `${p.fullName || "Unnamed"} (${p.id})`;
           selectPerson.appendChild(opt);
         });
+
+        // If there's only 1 profile or active selection, keep it ready
+        if (selectPerson.options.length === 2) {
+          selectPerson.selectedIndex = 1;
+          await loadSelectedPersonDetails();
+        }
       } else {
         selectPerson.innerHTML = '<option value="">No profiles found in registry</option>';
       }
@@ -348,27 +381,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  selectPerson.addEventListener("change", async () => {
+  async function loadSelectedPersonDetails() {
     const id = selectPerson.value;
-    if (!id) return;
+    if (!id) {
+      showToast("Please choose a person from the dropdown first.", "error");
+      return;
+    }
 
     try {
-      showToast(`Fetching biodata for '${id}'...`, "info");
+      showToast(`Loading details for '${id}'...`, "info");
       const profile = await ghClient.getProfileById(id);
       populateFormWithProfile(profile);
       showToast(`Loaded ${profile.fullName || id}! You can now edit and save.`, "success");
     } catch (err) {
+      console.error("Profile load error:", err);
       showToast(`Could not load profile: ${err.message}`, "error");
     }
-  });
+  }
+
+  selectPerson.addEventListener("change", loadSelectedPersonDetails);
+
+  if (btnRefreshRegistry) {
+    btnRefreshRegistry.addEventListener("click", async () => {
+      showToast("Refreshing profile list from GitHub...", "info");
+      await populateRegistryDropdown();
+      showToast("Profile list refreshed!", "success");
+    });
+  }
+
+  if (btnForceLoadPerson) {
+    btnForceLoadPerson.addEventListener("click", loadSelectedPersonDetails);
+  }
 
   function populateFormWithProfile(p) {
     personIdInput.value = p.id || "";
     personIdInput.readOnly = true; // Lock ID in edit mode to preserve URL!
     fullNameInput.value = p.fullName || "";
+    
     document.getElementById("tagline").value = p.tagline || p.occupation || "";
     document.getElementById("phone").value = p.phone || "";
-    document.getElementById("whatsapp").value = p.whatsapp || "";
+    document.getElementById("whatsapp").value = p.whatsapp || p.phone || "";
     document.getElementById("email").value = p.email || "";
     document.getElementById("dob").value = p.dob || "";
     document.getElementById("gender").value = p.gender || "";
@@ -379,9 +431,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("skillsInput").value = Array.isArray(p.skills) ? p.skills.join(", ") : "";
     document.getElementById("languagesInput").value = Array.isArray(p.languages) ? p.languages.join(", ") : "";
 
-    // Photo
+    // Photo preview (resolved with raw GitHub URL so it never breaks on ByetHost)
     existingPhotoPath.value = p.photo || "assets/photos/demo-aditya.svg";
-    photoPreviewImg.src = p.photo || "assets/photos/demo-aditya.svg";
+    photoPreviewImg.src = resolvePhotoUrl(p.photo);
     selectedPhotoFile = null;
 
     // Clear and rebuild repeaters
@@ -400,7 +452,71 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
-  // Form Submission & GitHub Commit
+  // Live Progress Modal Checkpoint Controller
+  // ----------------------------------------------------
+  const stepsMap = {
+    validate: document.getElementById("pstep-validate"),
+    photo: document.getElementById("pstep-photo"),
+    json: document.getElementById("pstep-json"),
+    registry: document.getElementById("pstep-registry"),
+    qr: document.getElementById("pstep-qr")
+  };
+
+  function setStepState(stepKey, state, descText = null) {
+    const el = stepsMap[stepKey];
+    if (!el) return;
+
+    el.classList.remove("running", "done", "skipped", "error");
+    const iconEl = el.querySelector(".step-status-icon");
+    const descEl = el.querySelector(".step-desc");
+
+    if (descText && descEl) {
+      descEl.textContent = descText;
+    }
+
+    if (state === "running") {
+      el.classList.add("running");
+      iconEl.innerHTML = '<span class="step-spinner"></span>';
+    } else if (state === "done") {
+      el.classList.add("done");
+      iconEl.textContent = "✅";
+    } else if (state === "skipped") {
+      el.classList.add("skipped");
+      iconEl.textContent = "⏭️";
+    } else if (state === "error") {
+      el.classList.add("error");
+      iconEl.textContent = "❌";
+    } else {
+      iconEl.textContent = "⚪";
+    }
+  }
+
+  function resetProgressModal() {
+    setStepState("validate", "pending", "Checking required fields and slug formatting");
+    setStepState("photo", "pending", "Converting to Base64 and committing to assets/photos/");
+    setStepState("json", "pending", "Writing record to data/profiles/{id}.json");
+    setStepState("registry", "pending", "Updating data/registry.json for quick switcher");
+    setStepState("qr", "pending", "Permanent URL activated on GitHub Pages");
+
+    progressFooter.style.display = "none";
+    progressErrorBox.style.display = "none";
+    progressErrorActions.style.display = "none";
+  }
+
+  function openProgressModal() {
+    resetProgressModal();
+    progressModal.classList.add("open");
+  }
+
+  function closeProgressModal() {
+    progressModal.classList.remove("open");
+  }
+
+  if (btnCloseProgressModal) btnCloseProgressModal.addEventListener("click", closeProgressModal);
+  if (btnCloseProgressModalErr) btnCloseProgressModalErr.addEventListener("click", closeProgressModal);
+
+  // ----------------------------------------------------
+  // Form Submission & Live GitHub Commit Pipeline
   // ----------------------------------------------------
   document.getElementById("biodataForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -410,6 +526,17 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Please specify a Unique Person ID.", "error");
       return;
     }
+
+    // Check if GitHub PAT is configured
+    if (!ghClient.hasToken()) {
+      settingsModal.classList.add("open");
+      showToast("Please connect your GitHub Personal Access Token first.", "error");
+      return;
+    }
+
+    // Open live progress modal
+    openProgressModal();
+    setStepState("validate", "running", "Validating details...");
 
     // Prepare Profile Object
     const profileData = {
@@ -432,31 +559,49 @@ document.addEventListener("DOMContentLoaded", () => {
       updatedAt: new Date().toISOString().split("T")[0]
     };
 
-    // Check if GitHub PAT is configured
-    if (!ghClient.hasToken()) {
-      settingsModal.classList.add("open");
-      showToast("Please enter your GitHub Personal Access Token to commit changes.", "error");
-      return;
-    }
+    setStepState("validate", "done", `All particulars verified for '${profileData.fullName}'`);
 
-    // Set Loading State
+    // Lock submit button
     btnSubmit.disabled = true;
-    btnSubmitText.textContent = "⏳ Committing to GitHub...";
 
     try {
-      const result = await ghClient.saveProfile(profileData, selectedPhotoFile);
-      showToast(`Success! Biodata for '${profileData.fullName}' committed to GitHub.`, "success");
-      
+      // Step-by-step pipeline execution
+      const result = await ghClient.saveProfile(
+        profileData,
+        selectedPhotoFile,
+        (step, status, detail) => {
+          if (step === "photo_process") {
+            setStepState("photo", status, detail);
+          } else if (step === "json_commit") {
+            setStepState("json", status, detail);
+          } else if (step === "registry_sync") {
+            setStepState("registry", status, detail);
+          } else if (step === "qr_ready") {
+            setStepState("qr", status, detail);
+          }
+        }
+      );
+
+      // Finalize UI
       if (result.photoPath) {
         existingPhotoPath.value = result.photoPath;
+        photoPreviewImg.src = resolvePhotoUrl(result.photoPath);
       }
 
-      if (currentMode === "new") {
-        await populateRegistryDropdown();
-      }
+      setStepState("qr", "done", `Live permanent link: ${result.profileUrl}`);
+      btnProgressViewProfile.href = result.profileUrl;
+      progressFooter.style.display = "block";
+
+      showToast(`🎉 Success! Biodata for '${profileData.fullName}' committed to GitHub.`, "success");
+
+      // Reload dropdown registry in background
+      await populateRegistryDropdown();
     } catch (err) {
       console.error("Save error:", err);
-      showToast(`Failed to save: ${err.message}`, "error");
+      progressErrorBox.style.display = "block";
+      progressErrorText.textContent = `Commit Failed: ${err.message}`;
+      progressErrorActions.style.display = "block";
+      showToast(`Failed: ${err.message}`, "error");
     } finally {
       btnSubmit.disabled = false;
       btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
@@ -559,9 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    window.APP_CONFIG.githubUsername = username;
-    window.APP_CONFIG.githubRepo = repo;
-    window.APP_CONFIG.branch = branch;
+    ghClient.persistConfig(username, repo, branch);
     ghClient.setToken(token);
 
     btnSaveSettings.textContent = "Verifying...";

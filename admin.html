@@ -107,10 +107,20 @@
         <!-- Edit Profile Selector (Visible only in Edit mode) -->
         <div id="editSelectorSection" class="glass-panel form-section" style="display: none; border-color: var(--accent-primary);">
           <div class="form-group" style="margin-bottom: 0;">
-            <label for="selectExistingPerson">Choose Person to Edit:</label>
-            <select id="selectExistingPerson" class="form-control">
-              <option value="">-- Select a registered person --</option>
-            </select>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label for="selectExistingPerson" style="margin: 0;">Choose Person to Edit:</label>
+              <button id="btnRefreshRegistry" type="button" class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 0.78rem;" title="Reload profile list from GitHub">
+                🔄 Refresh List
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <select id="selectExistingPerson" class="form-control" style="flex: 1;">
+                <option value="">-- Select a registered person --</option>
+              </select>
+              <button id="btnForceLoadPerson" type="button" class="btn btn-primary btn-sm" style="padding: 8px 16px;">
+                📂 Load Details
+              </button>
+            </div>
             <span class="input-hint">Selecting a person will instantly pull their current data and photo from GitHub.</span>
           </div>
         </div>
@@ -374,6 +384,96 @@
           Disconnect
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       3. LIVE COMMIT PROGRESS MODAL (Checkpoints & Live Status)
+       ======================================================== -->
+  <div class="progress-modal-backdrop" id="progressModal">
+    <div class="glass-panel progress-card">
+      <div class="progress-header">
+        <div class="progress-header-icon">⚡</div>
+        <div>
+          <h3 id="progressModalTitle">Synchronizing with GitHub</h3>
+          <p id="progressModalSubtitle">Real-time commit & pipeline progress</p>
+        </div>
+      </div>
+
+      <div class="progress-steps-list">
+        <!-- Step 1: Validation -->
+        <div class="progress-step-item" id="pstep-validate">
+          <div class="step-status-icon">⚪</div>
+          <div class="step-info">
+            <div class="step-title">1. Validating Profile Details</div>
+            <div class="step-desc">Checking required fields and slug formatting</div>
+          </div>
+        </div>
+
+        <!-- Step 2: Photo Encoding (Base64) & Upload -->
+        <div class="progress-step-item" id="pstep-photo">
+          <div class="step-status-icon">⚪</div>
+          <div class="step-info">
+            <div class="step-title">2. Processing & Uploading Photo</div>
+            <div class="step-desc">Converting to Base64 and committing to assets/photos/</div>
+          </div>
+        </div>
+
+        <!-- Step 3: JSON Commit -->
+        <div class="progress-step-item" id="pstep-json">
+          <div class="step-status-icon">⚪</div>
+          <div class="step-info">
+            <div class="step-title">3. Committing Biodata JSON</div>
+            <div class="step-desc">Writing record to data/profiles/{id}.json</div>
+          </div>
+        </div>
+
+        <!-- Step 4: Registry Update -->
+        <div class="progress-step-item" id="pstep-registry">
+          <div class="step-status-icon">⚪</div>
+          <div class="step-info">
+            <div class="step-title">4. Synchronizing Registry Index</div>
+            <div class="step-desc">Updating data/registry.json for quick switcher</div>
+          </div>
+        </div>
+
+        <!-- Step 5: Dynamic QR Finalization -->
+        <div class="progress-step-item" id="pstep-qr">
+          <div class="step-status-icon">⚪</div>
+          <div class="step-info">
+            <div class="step-title">5. Permanent QR Code Active</div>
+            <div class="step-desc">Permanent URL activated on GitHub Pages</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Error Box if failure -->
+      <div class="progress-error-box" id="progressErrorBox" style="display: none;">
+        <span id="progressErrorText">Error message here</span>
+      </div>
+
+      <!-- Success Footer (Shown when all done) -->
+      <div class="progress-footer" id="progressFooter" style="display: none;">
+        <div class="progress-success-pill">
+          🎉 All Changes Committed & Live!
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 14px;">
+          <a id="btnProgressViewProfile" href="#" target="_blank" class="btn btn-primary" style="flex: 1;">
+            🚀 Open Live Profile
+          </a>
+          <button id="btnCloseProgressModal" type="button" class="btn btn-secondary">
+            Done & Close
+          </button>
+        </div>
+      </div>
+
+      <!-- Cancel / Close button for error state -->
+      <div id="progressErrorActions" style="display: none; margin-top: 16px;">
+        <button id="btnCloseProgressModalErr" type="button" class="btn btn-secondary" style="width: 100%;">
+          Close & Fix Details
+        </button>
+      </div>
+
     </div>
   </div>
 
