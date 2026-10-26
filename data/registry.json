@@ -8,6 +8,15 @@
       "email": "aditya@example.com",
       "photo": "assets/photos/demo-aditya.svg",
       "updatedAt": "2026-10-26"
+    },
+    {
+      "id": "sheshu-dev-panda",
+      "fullName": "Sheshu Dev Panda",
+      "occupation": "Loco Pilot",
+      "phone": "9752443199",
+      "email": "pandasd08@gmail.com",
+      "photo": "assets/photos/sheshu-dev-panda.webp",
+      "updatedAt": "2026-10-26"
     }
   ]
 }
