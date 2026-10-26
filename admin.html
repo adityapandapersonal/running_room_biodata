@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/base.css?v=3.0">
-  <link rel="stylesheet" href="css/admin.css?v=3.0">
+  <link rel="stylesheet" href="css/base.css?v=6.5">
+  <link rel="stylesheet" href="css/admin.css?v=6.5">
 </head>
 <body>
 
@@ -357,11 +357,14 @@
           </div>
 
           <!-- Submit Action Area -->
-          <div style="margin-top: 24px; display: flex; gap: 14px;">
-            <button id="btnSubmitForm" type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+          <div style="margin-top: 24px; display: flex; gap: 14px; flex-wrap: wrap;">
+            <button id="btnSubmitForm" type="submit" class="btn btn-primary btn-lg" style="flex: 2; min-width: 220px;">
               <span id="btnSubmitText">💾 Save & Commit to GitHub</span>
             </button>
-            <button id="btnResetForm" type="button" class="btn btn-secondary btn-lg">
+            <button id="btnDeletePerson" type="button" class="btn btn-secondary btn-lg" style="display: none; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); cursor: pointer;" title="Delete selected person from repository">
+              🗑️ Delete Person
+            </button>
+            <button id="btnResetForm" type="button" class="btn btn-secondary btn-lg" style="flex: 1; min-width: 130px;">
               Reset Form
             </button>
           </div>
@@ -536,9 +539,9 @@
   </div>
 
   <!-- Scripts with Cache Busting -->
-  <script src="assets/vendor/qrcode.min.js?v=3.2"></script>
-  <script src="js/config.js?v=3.2"></script>
-  <script src="js/github-api.js?v=3.2"></script>
-  <script src="js/admin.js?v=3.2"></script>
+  <script src="assets/vendor/qrcode.min.js?v=6.5"></script>
+  <script src="js/config.js?v=6.5"></script>
+  <script src="js/github-api.js?v=6.5"></script>
+  <script src="js/admin.js?v=6.5"></script>
 </body>
 </html>

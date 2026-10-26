@@ -21,12 +21,18 @@
   box-shadow: var(--shadow-xl), var(--shadow-glow);
 }
 
-/* Top Banner with subtle pattern */
+/* Top Banner with subtle pattern and official heading */
 .profile-banner {
-  height: 120px;
+  height: 125px;
   background: var(--accent-gradient);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 14px;
+  text-align: center;
 }
 
 .profile-banner::after {
@@ -34,6 +40,30 @@
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.banner-top-title {
+  position: relative;
+  z-index: 2;
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.45);
+}
+
+.banner-sub-title {
+  position: relative;
+  z-index: 2;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.92);
+  text-transform: uppercase;
+  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 /* Header Content with Avatar */

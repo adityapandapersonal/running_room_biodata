@@ -380,6 +380,78 @@ class GitHubClient {
   }
 
   /**
+   * Delete a file from GitHub repository
+   */
+  async deleteFile(path, commitMessage, sha = null) {
+    if (!sha) {
+      const fileInfo = await this.getFile(path).catch(() => null);
+      if (!fileInfo) return null; // file does not exist, nothing to delete
+      sha = fileInfo.sha;
+    }
+    const url = `https://api.github.com/repos/${this.config.githubUsername}/${this.config.githubRepo}/contents/${path}`;
+    const body = {
+      message: commitMessage,
+      sha: sha,
+      branch: this.config.branch
+    };
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: this.getHeaders(),
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || `Failed to delete ${path} (${res.status})`);
+    }
+    return await res.json();
+  }
+
+  /**
+   * Delete complete biodata profile JSON and remove from registry.json
+   */
+  async deleteProfile(personId) {
+    if (!personId) throw new Error("Person ID is required for deletion.");
+
+    // 1. Delete data/profiles/${personId}.json
+    const profilePath = `data/profiles/${personId}.json`;
+    await this.deleteFile(
+      profilePath,
+      `Delete Running Room biodata record for ${personId}`
+    ).catch((err) => {
+      console.warn("Could not delete profile JSON (maybe already deleted):", err);
+    });
+
+    // 2. Remove entry from data/registry.json
+    const registryPath = "data/registry.json";
+    try {
+      const existing = await this.getFile(registryPath);
+      if (existing && existing.content) {
+        const decoded = this.decodeBase64(existing.content);
+        const registry = JSON.parse(decoded);
+        if (Array.isArray(registry.profiles)) {
+          registry.profiles = registry.profiles.filter((p) => p.id !== personId);
+          const newBase64 = this.encodeBase64(JSON.stringify(registry, null, 2));
+          await this.commitFile(
+            registryPath,
+            newBase64,
+            `Remove person ${personId} from registry`,
+            existing.sha
+          );
+        }
+      }
+    } catch (e) {
+      console.warn("Could not update registry upon deletion:", e);
+    }
+
+    // 3. Clear from memory cache
+    if (this._profileCache) {
+      this._profileCache.delete(personId);
+    }
+
+    return { success: true, id: personId };
+  }
+
+  /**
    * Fetch all registered profiles for admin dropdown
    * Priority: Raw GitHub (fastest & no cache lag) -> GitHub API -> Local file
    */

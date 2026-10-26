@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSubmit = document.getElementById("btnSubmitForm");
   const btnSubmitText = document.getElementById("btnSubmitText");
   const btnReset = document.getElementById("btnResetForm");
+  const btnDeletePerson = document.getElementById("btnDeletePerson");
 
   // Sidebar Controls
   const btnDownloadQr = document.getElementById("btnDownloadQr");
@@ -308,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (editSelectorSec) editSelectorSec.style.display = "none";
       if (personIdInput) personIdInput.readOnly = false;
       if (btnSubmitText) btnSubmitText.textContent = "💾 Save & Commit to GitHub";
+      if (btnDeletePerson) btnDeletePerson.style.display = "none";
       resetForm();
     });
   }
@@ -649,6 +651,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`[Auto-Fill] Loading profile JSON for '${id}'...`);
       const profile = await ghClient.getProfileById(id);
       populateFormWithProfile(profile);
+
+      if (btnDeletePerson) {
+        btnDeletePerson.style.display = "inline-flex";
+      }
 
       if (statusNotice) {
         statusNotice.innerHTML = `<span>✅</span> <span style="color: #34d399; font-weight: 600;">Details loaded for <strong>${profile.fullName || id}</strong> directly from JSON!</span>`;
@@ -1005,11 +1011,56 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnSubmitText) {
       btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
     }
+    if (btnDeletePerson) {
+      btnDeletePerson.style.display = "none";
+    }
     updateQrCode("demo-person");
     updateQrNameDisplay("Employee Name");
   }
 
   if (btnReset) btnReset.addEventListener("click", resetForm);
+
+  // ----------------------------------------------------
+  // 11b. Delete Person Handler
+  // ----------------------------------------------------
+  if (btnDeletePerson) {
+    btnDeletePerson.addEventListener("click", async () => {
+      const id = personIdInput ? personIdInput.value.trim() : "";
+      const name = fullNameInput ? fullNameInput.value.trim() : id;
+      if (!id) {
+        showToast("Please choose a person to delete first.", "error");
+        return;
+      }
+
+      const confirmed = confirm(
+        `⚠️ Are you sure you want to permanently delete "${name}" (${id}) from GitHub repository?\n\nThis will remove the JSON record and registry entry immediately.`
+      );
+      if (!confirmed) return;
+
+      if (!ghClient.hasToken()) {
+        if (settingsModal) settingsModal.classList.add("open");
+        showToast("Please connect your GitHub Personal Access Token first.", "error");
+        return;
+      }
+
+      btnDeletePerson.disabled = true;
+      btnDeletePerson.textContent = "⏳ Deleting...";
+
+      try {
+        await ghClient.deleteProfile(id);
+        showToast(`🗑️ Person '${name}' deleted successfully from GitHub!`, "success");
+        btnDeletePerson.style.display = "none";
+        resetForm();
+        await populateRegistryDropdown();
+      } catch (err) {
+        console.error("Delete error:", err);
+        showToast("Failed to delete person: " + err.message, "error");
+      } finally {
+        btnDeletePerson.disabled = false;
+        btnDeletePerson.textContent = "🗑️ Delete Person";
+      }
+    });
+  }
 
   // ----------------------------------------------------
   // 12. GitHub Settings & Auth Modal

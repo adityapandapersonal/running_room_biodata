@@ -232,6 +232,16 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setDrawColor(148, 163, 184); // Slate
   doc.rect(m + 1, m + 1, cw - 2, ph - (m * 2) - 2);
 
+  // 1b. Wait for employee photo if still loading
+  const avatarEl = document.getElementById("profileAvatar");
+  if (avatarEl && !avatarEl.complete) {
+    await new Promise((resolve) => {
+      avatarEl.onload = resolve;
+      avatarEl.onerror = resolve;
+      setTimeout(resolve, 800);
+    });
+  }
+
   // 2. Header Banner (Navy)
   doc.setFillColor(15, 23, 42);
   doc.rect(m + 2, m + 2, cw - 4, 18, "F");
@@ -241,16 +251,16 @@ async function generateOfficialVectorPdf(p, id) {
   doc.text("SOUTH EAST CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
   doc.setFontSize(13);
   doc.setTextColor(56, 189, 248); // Cyan
-  doc.text("RUNNING ROOM - DONGARGARH (DGG)", pw / 2, m + 14, { align: "center" });
+  doc.text("RUNNING ROOM, DONGARGARH", pw / 2, m + 14, { align: "center" });
 
   // 3. Document Title Bar
   doc.setFillColor(241, 245, 249);
   doc.setDrawColor(203, 213, 225);
   doc.rect(m + 2, m + 21, cw - 4, 8, "FD");
   doc.setTextColor(15, 23, 42);
-  doc.setFontSize(10.5);
+  doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.text("EMPLOYEE OFFICIAL BIODATA RECORD", pw / 2, m + 26.5, { align: "center" });
+  doc.text("CONTRACTOR’S STAFF BIO DATA SHEET", pw / 2, m + 26.5, { align: "center" });
 
   // 4. Structured Official Particulars Table
   const tableX = m + 2;
@@ -271,16 +281,20 @@ async function generateOfficialVectorPdf(p, id) {
   doc.rect(photoX, photoY, photoW, photoH, "FD");
 
   // Load and embed employee photo
-  const avatarEl = document.getElementById("profileAvatar");
   const photoDataUrl = await getImgDataUrl(avatarEl, p.photo);
   if (photoDataUrl) {
     try {
       doc.addImage(photoDataUrl, "PNG", photoX + 1, photoY + 1, photoW - 2, photoH - 6.5);
     } catch (e) {
-      console.warn("Could not embed photo into PDF:", e);
-      doc.setTextColor(148, 163, 184);
-      doc.setFontSize(7.5);
-      doc.text("Passport Photo", photoX + (photoW / 2), photoY + (photoH / 2) - 2, { align: "center" });
+      console.warn("Could not embed photo into PDF with PNG, trying auto:", e);
+      try {
+        doc.addImage(photoDataUrl, photoX + 1, photoY + 1, photoW - 2, photoH - 6.5);
+      } catch (err2) {
+        console.warn("Could not embed photo into PDF:", err2);
+        doc.setTextColor(148, 163, 184);
+        doc.setFontSize(7.5);
+        doc.text("Passport Photo", photoX + (photoW / 2), photoY + (photoH / 2) - 2, { align: "center" });
+      }
     }
   } else {
     doc.setTextColor(148, 163, 184);
@@ -505,12 +519,12 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setTextColor(148, 163, 184);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.text("Official Document - Running Room Dongargarh (SECR) | Computer Generated Vector PDF Document", pw / 2, ph - 4, { align: "center" });
+  doc.text("Official Document - Running Room Dongargarh (SECR) | CONTRACTOR’S STAFF BIO DATA SHEET", pw / 2, ph - 4, { align: "center" });
 
   // 7. Save File Directly
   const rawName = p.fullName || "Employee";
   const cleanName = rawName.trim().replace(/[^a-zA-Z0-9_\-\s]/g, "").replace(/\s+/g, "_") || "Employee";
-  const fileName = `${cleanName}_DGG_Running_Room_Biodata.pdf`;
+  const fileName = `${cleanName}_DGG_Contractor_Staff_Biodata.pdf`;
   doc.save(fileName);
 }
 
@@ -565,9 +579,18 @@ async function getImgDataUrl(imgEl, fallbackUrl) {
     return imgEl.src;
   }
 
-  const targetSrc = (imgEl && imgEl.src) ? imgEl.src : fallbackUrl;
+  // Target URL to fetch or load
+  let targetSrc = (imgEl && imgEl.src && !imgEl.src.includes("demo-aditya.svg")) 
+    ? imgEl.src 
+    : (fallbackUrl || (imgEl ? imgEl.src : null));
+
   if (!targetSrc) return null;
-  if (targetSrc.startsWith("data:")) return targetSrc;
+  if (targetSrc.startsWith("data:image/")) return targetSrc;
+
+  // Make sure relative path is converted to absolute URL
+  try {
+    targetSrc = new URL(targetSrc, window.location.href).href;
+  } catch (e) {}
 
   // Try creating an offscreen Image with crossOrigin = "anonymous"
   try {
