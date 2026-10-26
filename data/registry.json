@@ -18,6 +18,16 @@
       "email": "pandasd08@gmail.com",
       "photo": "assets/photos/sheshu-dev-panda.webp",
       "updatedAt": "2026-10-26"
+    },
+    {
+      "id": "aditya panda",
+      "idCardNo": "RR/DGG/737",
+      "fullName": "Aditya Panda",
+      "designation": "Loco Pilot",
+      "phone": "7987099449",
+      "photo": "assets/photos/aditya panda.jpg",
+      "signature": "assets/signatures/aditya panda.png",
+      "updatedAt": "2026-10-26"
     }
   ]
 }
