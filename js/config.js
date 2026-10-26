@@ -15,7 +15,7 @@ const APP_CONFIG = {
   adminAuth: {
     enabled: true,
     username: "aditya",           // <-- You can change this username anytime
-    password: "mypassword123",    // <-- You can change this password anytime
+    password: "panda1234",        // <-- You can change this password anytime
     sessionKey: "biodata_admin_authenticated"
   },
 
