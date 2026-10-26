@@ -385,10 +385,13 @@ document.addEventListener("DOMContentLoaded", () => {
   async function populateRegistryDropdown() {
     if (!selectPerson) return;
     selectPerson.innerHTML = '<option value="">Loading registered persons from GitHub...</option>';
+    let loadedProfiles = [];
+
     try {
       const reg = await ghClient.getRegistry();
       selectPerson.innerHTML = '<option value="">-- Choose a person to edit --</option>';
       if (reg.profiles && reg.profiles.length > 0) {
+        loadedProfiles = reg.profiles;
         reg.profiles.forEach((p) => {
           const opt = document.createElement("option");
           opt.value = p.id;
@@ -396,17 +399,27 @@ document.addEventListener("DOMContentLoaded", () => {
           selectPerson.appendChild(opt);
         });
 
-        // Auto-select and load if active or single
+        // Auto-select the first registered person if available
         if (selectPerson.options.length >= 2) {
           selectPerson.selectedIndex = 1;
-          await loadSelectedPersonDetails();
         }
       } else {
         selectPerson.innerHTML = '<option value="">No profiles found in registry</option>';
       }
     } catch (err) {
-      selectPerson.innerHTML = '<option value="">Failed to load profiles</option>';
+      console.error("Registry load error:", err);
+      selectPerson.innerHTML = '<option value="">Failed to load profiles list</option>';
       showToast("Error loading registry: " + err.message, "error");
+      return;
+    }
+
+    // Now safely load the selected person's details in a separate try/catch
+    if (selectPerson.value) {
+      try {
+        await loadSelectedPersonDetails();
+      } catch (loadErr) {
+        console.warn("Auto-load of first profile skipped:", loadErr);
+      }
     }
   }
 

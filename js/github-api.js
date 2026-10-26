@@ -14,9 +14,23 @@ class GitHubClient {
     const savedRepo = localStorage.getItem("biodata_github_repo");
     const savedBranch = localStorage.getItem("biodata_github_branch");
 
-    if (savedUser) this.config.githubUsername = savedUser;
-    if (savedRepo) this.config.githubRepo = savedRepo;
-    if (savedBranch) this.config.branch = savedBranch;
+    if (savedUser && savedUser !== "your-github-username" && savedUser.trim()) {
+      this.config.githubUsername = savedUser.trim();
+    } else {
+      this.config.githubUsername = "adityapandapersonal";
+    }
+
+    if (savedRepo && savedRepo !== "biodata-qr-system" && savedRepo.trim()) {
+      this.config.githubRepo = savedRepo.trim();
+    } else {
+      this.config.githubRepo = "running_room_biodata";
+    }
+
+    if (savedBranch && savedBranch.trim()) {
+      this.config.branch = savedBranch.trim();
+    } else {
+      this.config.branch = "main";
+    }
   }
 
   persistConfig(username, repo, branch) {
@@ -324,66 +338,87 @@ class GitHubClient {
    * Priority: Raw GitHub (fastest & no cache lag) -> GitHub API -> Local file
    */
   async getRegistry() {
-    // 1. Raw GitHub fetch (fastest, zero CDN lag)
+    // 1. Raw GitHub fetch (fastest & no cache lag)
     try {
       const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/registry.json?t=${Date.now()}`;
       const res = await fetch(rawUrl, { cache: "no-store" });
       if (res.ok) {
-        return await res.json();
+        const text = await res.text();
+        if (text && text.trim().startsWith("{")) {
+          return JSON.parse(text);
+        }
+      }
+    } catch (e) {
+      console.warn("Raw registry fetch failed, trying fallback:", e);
+    }
+
+    // 2. Local relative path fetch (when running on GitHub Pages)
+    try {
+      const res = await fetch("data/registry.json?t=" + Date.now());
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().startsWith("{")) {
+          return JSON.parse(text);
+        }
       }
     } catch (_) {}
 
-    // 2. GitHub REST API fallback
+    // 3. GitHub REST API fallback (with token)
     try {
       const file = await this.getFile("data/registry.json");
       if (file && file.content) {
         const decoded = this.decodeBase64(file.content);
         return JSON.parse(decoded);
       }
-    } catch (_) {}
-
-    // 3. Local relative path fallback
-    try {
-      const res = await fetch("data/registry.json?t=" + Date.now());
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (_) {}
+    } catch (e) {
+      console.warn("API registry fetch failed:", e);
+    }
 
     return { profiles: [] };
   }
 
   /**
    * Fetch a single profile by ID
-   * Priority: Raw GitHub (fastest & always fresh) -> GitHub API -> Local file
+   * Priority: Raw GitHub -> Local relative -> GitHub REST API
    */
   async getProfileById(id) {
-    // 1. Raw GitHub fetch (Works everywhere: ByetHost, Local, etc. with zero build delay)
+    const cleanId = encodeURIComponent((id || "").trim());
+
+    // 1. Raw GitHub fetch (zero build delay, works from any origin)
     try {
-      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${encodeURIComponent(id)}.json?t=${Date.now()}`;
+      const rawUrl = `https://raw.githubusercontent.com/${this.config.githubUsername}/${this.config.githubRepo}/${this.config.branch}/data/profiles/${cleanId}.json?t=${Date.now()}`;
       const res = await fetch(rawUrl, { cache: "no-store" });
       if (res.ok) {
-        const data = await res.json();
-        return data;
+        const text = await res.text();
+        if (text && text.trim().startsWith("{")) {
+          return JSON.parse(text);
+        }
+      }
+    } catch (e) {
+      console.warn("Raw profile fetch failed, trying fallback:", e);
+    }
+
+    // 2. Local relative path fetch (if on GitHub Pages)
+    try {
+      const res = await fetch(`data/profiles/${cleanId}.json?t=` + Date.now());
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.trim().startsWith("{")) {
+          return JSON.parse(text);
+        }
       }
     } catch (_) {}
 
-    // 2. GitHub REST API fallback
+    // 3. GitHub REST API fallback (with token)
     try {
-      const file = await this.getFile(`data/profiles/${id}.json`);
+      const file = await this.getFile(`data/profiles/${cleanId}.json`);
       if (file && file.content) {
         const decoded = this.decodeBase64(file.content);
         return JSON.parse(decoded);
       }
-    } catch (_) {}
-
-    // 3. Local relative path fallback
-    try {
-      const res = await fetch(`data/profiles/${id}.json?t=` + Date.now());
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (_) {}
+    } catch (e) {
+      console.warn("API profile fetch failed:", e);
+    }
 
     throw new Error(`Profile '${id}' could not be loaded from GitHub.`);
   }
