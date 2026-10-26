@@ -142,6 +142,14 @@
   background: rgba(56, 189, 248, 0.15);
 }
 
+.action-btn.email {
+  color: #a855f7;
+  border-color: rgba(168, 85, 247, 0.3);
+}
+.action-btn.email:hover {
+  background: rgba(168, 85, 247, 0.15);
+}
+
 /* Profile Body & Sections */
 .profile-body {
   padding: 0 28px 36px 28px;

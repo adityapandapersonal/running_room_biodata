@@ -94,7 +94,17 @@ function renderProfile(p, id) {
     }
   }
 
-  // 4. Fill All 18 Official Running Room Fields
+  const emailBtn = document.getElementById("actionEmail");
+  if (emailBtn) {
+    if (p.email) {
+      emailBtn.href = `mailto:${p.email}`;
+      emailBtn.style.display = "inline-flex";
+    } else {
+      emailBtn.style.display = "none";
+    }
+  }
+
+  // 4. Fill All Official Running Room Fields
   setText("val_idCardNo", p.idCardNo || p.id || "-");
   setText("val_fullName", p.fullName || "-");
   setText("val_designation", desig);
@@ -112,6 +122,7 @@ function renderProfile(p, id) {
 
   setText("val_gender", p.gender || "-");
   setText("val_maritalStatus", p.maritalStatus || "-");
+  setText("val_bloodGroup", p.bloodGroup || "-");
   setText("val_aadhaarNumber", p.aadhaarNumber || "-");
 
   const mobileEl = document.getElementById("val_mobileNumber");
@@ -122,6 +133,17 @@ function renderProfile(p, id) {
     } else {
       mobileEl.textContent = "-";
       mobileEl.removeAttribute("href");
+    }
+  }
+
+  const emailEl = document.getElementById("val_email");
+  if (emailEl) {
+    if (p.email) {
+      emailEl.textContent = p.email;
+      emailEl.href = `mailto:${p.email}`;
+    } else {
+      emailEl.textContent = "-";
+      emailEl.removeAttribute("href");
     }
   }
 

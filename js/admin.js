@@ -536,8 +536,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setSafeVal("gender", p.gender || "");
     setSafeVal("maritalStatus", p.maritalStatus || "");
+    setSafeVal("bloodGroup", p.bloodGroup || "");
     setSafeVal("aadhaarNumber", p.aadhaarNumber || "");
     setSafeVal("mobileNumber", p.mobileNumber || p.phone || "");
+    setSafeVal("email", p.email || "");
     setSafeVal("residentialAddress", p.residentialAddress || p.address || "");
 
     setSafeVal("policeVerifDoneDate", (p.policeVerifDoneDate || "").slice(0, 10));
@@ -696,9 +698,11 @@ document.addEventListener("DOMContentLoaded", () => {
         dob: getVal("dob"),
         gender: getVal("gender"),
         maritalStatus: getVal("maritalStatus"),
+        bloodGroup: getVal("bloodGroup"),
         aadhaarNumber: getVal("aadhaarNumber"),
         mobileNumber: getVal("mobileNumber"),
         phone: getVal("mobileNumber"),
+        email: getVal("email"),
         residentialAddress: getVal("residentialAddress"),
         address: getVal("residentialAddress"),
         policeVerifDoneDate: getVal("policeVerifDoneDate"),
