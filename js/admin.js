@@ -346,6 +346,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (personIdInput) {
     personIdInput.addEventListener("input", () => {
       personIdInput.dataset.manuallyEdited = "true";
+      if (currentMode === "new") {
+        const val = personIdInput.value;
+        const cleaned = val.replace(/\s+/g, "-");
+        if (cleaned !== val) {
+          const pos = personIdInput.selectionStart;
+          personIdInput.value = cleaned;
+          personIdInput.setSelectionRange(pos, pos);
+        }
+      }
       updateQrCode(personIdInput.value.trim() || "demo-person");
     });
   }
@@ -577,8 +586,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------------------------------------
   // 9. Dropdown for Editing Existing Profiles (Zero-Click Auto-Fill)
   // ----------------------------------------------------
-  async function populateRegistryDropdown() {
+  async function populateRegistryDropdown(preserveSelectedId = null) {
     if (!selectPerson) return;
+    const previousSelection = (preserveSelectedId || selectPerson.value || "").trim();
     const statusNotice = document.getElementById("loadStatusNotice");
     if (statusNotice) {
       statusNotice.innerHTML = `<span>⏳</span> <span style="color: var(--accent-secondary);">Fetching registered profiles from GitHub...</span>`;
@@ -597,11 +607,20 @@ document.addEventListener("DOMContentLoaded", () => {
           selectPerson.appendChild(opt);
         });
 
-        // Automatically prioritize the most recently updated or first person
-        if (selectPerson.options.length >= 2) {
-          // If sheshu-dev-panda exists, pre-select it or default to index 1
+        // Smart selection: keep existing or preserved selection if valid
+        let chosenIdx = -1;
+        if (previousSelection) {
+          chosenIdx = Array.from(selectPerson.options).findIndex((o) => o.value === previousSelection);
+        }
+
+        // If no prior selection, prioritize sheshu-dev-panda or index 1
+        if (chosenIdx <= 0 && selectPerson.options.length >= 2) {
           const sheshuIdx = Array.from(selectPerson.options).findIndex((o) => o.value === "sheshu-dev-panda");
-          selectPerson.selectedIndex = sheshuIdx > 0 ? sheshuIdx : 1;
+          chosenIdx = sheshuIdx > 0 ? sheshuIdx : 1;
+        }
+
+        if (chosenIdx > 0) {
+          selectPerson.selectedIndex = chosenIdx;
         }
 
         if (statusNotice) {
@@ -888,6 +907,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = personIdInput ? personIdInput.value.trim() : "";
       if (!id) {
         showToast("Please specify a Unique Person ID.", "error");
+        if (personIdInput) personIdInput.focus();
+        return;
+      }
+
+      const fullName = fullNameInput ? fullNameInput.value.trim() : "";
+      if (!fullName) {
+        showToast("Please enter Employee Name.", "error");
+        if (fullNameInput) fullNameInput.focus();
         return;
       }
 
@@ -975,7 +1002,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         showToast(`🎉 Success! Biodata for '${profileData.fullName}' committed to GitHub.`, "success");
 
-        await populateRegistryDropdown();
+        await populateRegistryDropdown(result.id);
       } catch (err) {
         console.error("Save error:", err);
         if (progressErrorBox) {
