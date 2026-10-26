@@ -350,6 +350,53 @@ textarea.form-control {
   text-align: center;
 }
 
+.qr-preview-card {
+  width: 236px;
+  margin: 16px auto;
+  padding: 16px 14px 12px 14px;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.qr-canvas-box {
+  width: 196px;
+  height: 196px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-canvas-box img, 
+.qr-canvas-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+
+.qr-name-tag {
+  width: 100%;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  line-height: 1.25;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  letter-spacing: -0.01em;
+  min-height: 24px;
+  transition: font-size var(--transition-fast);
+}
+
 .qr-box-main {
   width: 220px;
   height: 220px;

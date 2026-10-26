@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const livePermalinkPreview = document.getElementById("livePermalinkPreview");
   const adminPermalinkDisplay = document.getElementById("adminPermalinkDisplay");
   const adminQrCanvas = document.getElementById("adminQrCanvas");
+  const adminQrNameDisplay = document.getElementById("adminQrNameDisplay");
   const photoFileInput = document.getElementById("photoFileInput");
   const photoPreviewImg = document.getElementById("photoPreviewImg");
   const existingPhotoPath = document.getElementById("existingPhotoPath");
@@ -162,6 +163,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ----------------------------------------------------
+  // 2b. Live QR Code Name Display & Dynamic Sizing
+  // ----------------------------------------------------
+  function updateQrNameDisplay(forcedName) {
+    const qrNameEl = document.getElementById("adminQrNameDisplay");
+    if (!qrNameEl) return;
+    const nameVal = (forcedName !== undefined && forcedName !== null)
+      ? String(forcedName).trim()
+      : (fullNameInput ? fullNameInput.value.trim() : "");
+
+    qrNameEl.textContent = nameVal || "Employee Name";
+
+    // Dynamic typography scaling for long names so it never breaks
+    if (nameVal.length > 32) {
+      qrNameEl.style.fontSize = "0.76rem";
+      qrNameEl.style.lineHeight = "1.2";
+    } else if (nameVal.length > 20) {
+      qrNameEl.style.fontSize = "0.84rem";
+      qrNameEl.style.lineHeight = "1.25";
+    } else {
+      qrNameEl.style.fontSize = "0.92rem";
+      qrNameEl.style.lineHeight = "1.3";
+    }
+  }
+
+  // ----------------------------------------------------
   // 3. Persistent Authentication Handling
   // ----------------------------------------------------
   const authConfig = window.APP_CONFIG.adminAuth || { enabled: false };
@@ -240,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkGitHubConnection();
     loadSettingsIntoModal();
     updateQrCode(personIdInput ? personIdInput.value : "demo-person");
+    updateQrNameDisplay();
 
     if (navViewProfileBtn) {
       navViewProfileBtn.href = window.APP_CONFIG.getBaseUrl();
@@ -292,6 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ----------------------------------------------------
   if (fullNameInput) {
     fullNameInput.addEventListener("input", () => {
+      updateQrNameDisplay();
       if (currentMode === "new" && personIdInput && !personIdInput.dataset.manuallyEdited) {
         const slug = fullNameInput.value
           .trim()
@@ -341,29 +369,132 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (btnDownloadQr) {
     btnDownloadQr.addEventListener("click", () => {
-      const canvas = adminQrCanvas ? adminQrCanvas.querySelector("canvas") : null;
-      const img = adminQrCanvas ? adminQrCanvas.querySelector("img") : null;
-      const personId = personIdInput ? personIdInput.value.trim() : "qr-code";
+      const sourceCanvas = adminQrCanvas ? adminQrCanvas.querySelector("canvas") : null;
+      const sourceImg = adminQrCanvas ? adminQrCanvas.querySelector("img") : null;
+      const sourceEl = sourceCanvas || sourceImg;
 
-      let downloadUrl = "";
-      if (canvas) {
-        downloadUrl = canvas.toDataURL("image/png");
-      } else if (img && img.src) {
-        downloadUrl = img.src;
-      }
-
-      if (!downloadUrl) {
-        showToast("Could not generate QR download image", "error");
+      if (!sourceEl) {
+        showToast("QR code not ready yet, please wait...", "error");
         return;
       }
 
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = `QR-${personId || "biodata"}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      showToast(`Downloaded QR-${personId || "biodata"}.png! Ready for print.`, "success");
+      const rawName = fullNameInput ? fullNameInput.value.trim() : "";
+      const displayName = rawName || "Employee Name";
+      const personId = personIdInput ? personIdInput.value.trim() : "biodata";
+      const idCardNoEl = document.getElementById("idCardNo");
+      const idCardNo = idCardNoEl ? idCardNoEl.value.trim() : "";
+
+      // Canvas dimensions for crisp print quality with ample quiet zone
+      const canvasWidth = 600;
+      const qrSize = 460;
+      const paddingX = Math.round((canvasWidth - qrSize) / 2); // 70px left & right safe margin
+      const paddingTop = 45; // 45px top margin
+
+      const offscreen = document.createElement("canvas");
+      const ctx = offscreen.getContext("2d");
+
+      // Adaptive font sizing based on length of name
+      let fontSize = 28;
+      if (displayName.length > 34) {
+        fontSize = 20;
+      } else if (displayName.length > 24) {
+        fontSize = 23;
+      } else if (displayName.length > 16) {
+        fontSize = 26;
+      }
+
+      ctx.font = `bold ${fontSize}px "Inter", "Segoe UI", -apple-system, Roboto, Arial, sans-serif`;
+
+      // Word wrapping logic so long names fit gracefully
+      const maxTextWidth = canvasWidth - 60; // 540px
+      const words = displayName.split(" ");
+      const lines = [];
+      let currentLine = "";
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxTextWidth && currentLine) {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      const lineHeight = Math.round(fontSize * 1.35);
+      const textBlockHeight = lines.length * lineHeight;
+      const dividerY = paddingTop + qrSize + 20;
+      const textStartY = dividerY + 22;
+      const subText = idCardNo ? `ID: ${idCardNo}` : "";
+      const subTextHeight = subText ? 24 : 0;
+      const paddingBottom = 38;
+      const canvasHeight = textStartY + textBlockHeight + subTextHeight + paddingBottom;
+
+      offscreen.width = canvasWidth;
+      offscreen.height = canvasHeight;
+
+      // Pure white card background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Clean subtle outer border
+      ctx.strokeStyle = "#cbd5e1";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(2, 2, canvasWidth - 4, canvasHeight - 4);
+
+      // Draw QR Code centered with ample quiet zone
+      ctx.drawImage(sourceEl, paddingX, paddingTop, qrSize, qrSize);
+
+      // Draw sleek divider line
+      ctx.strokeStyle = "#e2e8f0";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(paddingX, dividerY);
+      ctx.lineTo(canvasWidth - paddingX, dividerY);
+      ctx.stroke();
+
+      // Draw Employee Name
+      ctx.fillStyle = "#0f172a";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.font = `bold ${fontSize}px "Inter", "Segoe UI", -apple-system, Roboto, Arial, sans-serif`;
+
+      let currentY = textStartY;
+      for (let j = 0; j < lines.length; j++) {
+        ctx.fillText(lines[j], canvasWidth / 2, currentY);
+        currentY += lineHeight;
+      }
+
+      // Draw Subtitle / ID Card No if available
+      if (subText) {
+        ctx.fillStyle = "#64748b";
+        ctx.font = `600 16px "Inter", "Segoe UI", -apple-system, Roboto, Arial, sans-serif`;
+        ctx.fillText(subText, canvasWidth / 2, currentY + 6);
+      }
+
+      try {
+        const downloadUrl = offscreen.toDataURL("image/png");
+        const safeName = displayName.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const safeId = personId.replace(/[^a-zA-Z0-9_-]/g, "_");
+        const fileName = `QR_${safeName}_${safeId}.png`;
+
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        showToast(`Downloaded ${fileName} with quiet zone border & name!`, "success");
+      } catch (err) {
+        console.error("Export PNG error:", err);
+        showToast("Could not generate styled QR PNG", "error");
+      }
     });
   }
 
@@ -571,6 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Full Name
     if (fullNameInput) {
       fullNameInput.value = p.fullName || "";
+      updateQrNameDisplay(p.fullName);
     }
 
     // Helper for safe input assignment
@@ -865,6 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btnSubmitText.textContent = currentMode === "new" ? "💾 Save & Commit to GitHub" : "🔄 Update & Commit Changes";
     }
     updateQrCode("demo-person");
+    updateQrNameDisplay("Employee Name");
   }
 
   if (btnReset) btnReset.addEventListener("click", resetForm);
