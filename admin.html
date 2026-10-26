@@ -60,10 +60,10 @@
     <!-- Top Navigation Bar -->
     <header class="glass-panel admin-navbar">
       <div class="brand">
-        <div class="brand-icon">⚡</div>
+        <div class="brand-icon">📋</div>
         <div class="brand-text">
-          <h1>QR Biodata Studio & CMS</h1>
-          <p>Secure Cloud Studio &bull; GitHub Pages Edition</p>
+          <h1>Running Room Biodata Admin</h1>
+          <p>DGG Running Room &bull; SECR</p>
         </div>
       </div>
 
@@ -121,9 +121,6 @@
                 <option value="">-- Choose a person to edit --</option>
               </select>
             </div>
-            <div id="loadStatusNotice" style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-              <span>💡</span> <span>Select any person above &mdash; full details, photo, and QR code auto-fill immediately from JSON!</span>
-            </div>
           </div>
         </div>
 
@@ -139,13 +136,11 @@
               <div class="form-group">
                 <label for="personId">Person Unique ID / Slug *</label>
                 <input type="text" id="personId" class="form-control" placeholder="e.g. rahul-sharma-101" required pattern="^[a-zA-Z0-9_-]+$">
-                <span class="input-hint">Letters, numbers, hyphens only. <strong>This creates the permanent URL and QR code.</strong></span>
               </div>
 
               <div class="form-group">
                 <label>Permanent URL Preview</label>
                 <div class="permalink-box" id="livePermalinkPreview" style="margin: 0;">https://.../index.html?id=...</div>
-                <span class="input-hint">This link will NEVER change, even when you update biodata in the future.</span>
               </div>
             </div>
           </div>
@@ -168,7 +163,6 @@
                     📷 Choose / Capture Photo
                   </label>
                   <input type="file" id="photoFileInput" accept="image/*" style="display: none;">
-                  <div class="input-hint">Passport size square photo.</div>
                   <input type="hidden" id="existingPhotoPath" value="assets/photos/demo-aditya.svg">
                 </div>
               </div>
@@ -190,7 +184,6 @@
                     ✍️ Photo Khichke / Upload Sign
                   </label>
                   <input type="file" id="signatureFileInput" accept="image/*" capture="environment" style="display: none;">
-                  <div class="input-hint">Paper par sign karke photo kheench kar ya phone gallery se upload karein.</div>
                   <input type="hidden" id="existingSignaturePath" value="assets/signatures/sample-signature.svg">
                 </div>
               </div>
@@ -350,15 +343,12 @@
 
           <!-- Section 4: Dynamic Custom Particulars (Pencil Details Adder) -->
           <div class="glass-panel form-section" id="customDetailsSection">
-            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <h3><span>✏️</span> Custom Details / अतिरिक्त विवरण</h3>
               <button type="button" id="btnAddCustomField" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
                 <span style="font-size: 1rem;">✏️</span> <span>+ Add Custom Field</span>
               </button>
             </div>
-            <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: -4px; margin-bottom: 14px;">
-              Agar kisi employee ka koi aur naya detail add karna ho (jaise PF Number, Station, Emergency Contact, etc.), to pencil button se Heading aur Value add kar sakte hain. Yeh table me automatic display ho jayega.
-            </p>
             
             <!-- Dynamic Custom Fields Container -->
             <div id="customFieldsList">
@@ -383,10 +373,7 @@
       <aside class="admin-sidebar">
         
         <div class="glass-panel qr-studio-card">
-          <h2 style="font-size: 1.25rem;">Permanent QR Code</h2>
-          <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
-            Prints once, updates forever.
-          </p>
+          <h2 style="font-size: 1.25rem; margin-bottom: 12px;">Permanent QR Code</h2>
 
           <!-- The Live QR Code Card Preview (With safe padding & employee name) -->
           <div class="qr-preview-card" id="adminQrCardPreview">
@@ -412,20 +399,6 @@
           </div>
         </div>
 
-        <!-- Help Info Box -->
-        <div class="glass-panel" style="padding: 20px; font-size: 0.85rem; color: var(--text-secondary);">
-          <h4 style="color: var(--text-primary); margin-bottom: 8px;">💡 How this works</h4>
-          <p style="margin-bottom: 8px;">
-            1. Every person receives a fixed slug like <code>p-101</code>.
-          </p>
-          <p style="margin-bottom: 8px;">
-            2. When you save, it automatically commits the person's JSON file and photo directly to your GitHub repo.
-          </p>
-          <p>
-            3. <strong>The URL never changes</strong>, so the QR code you print today will always work!
-          </p>
-        </div>
-
       </aside>
 
     </main>
@@ -437,15 +410,9 @@
       <button class="modal-close" id="btnCloseSettingsModal" type="button">&times;</button>
       
       <h2 style="font-size: 1.4rem; margin-bottom: 8px;">🔑 GitHub Access Token Setup</h2>
-      <p style="font-size: 0.85rem; color: var(--text-secondary);">
-        Configure your GitHub Personal Access Token (PAT) so this admin dashboard can commit files and photos directly to your repository.
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px;">
+        GitHub repository synchronization credentials.
       </p>
-
-      <ol class="steps-list">
-        <li>Go to <strong>GitHub.com &gt; Settings &gt; Developer settings &gt; Personal access tokens</strong>.</li>
-        <li>Generate a token with <code>repo</code> (or Fine-grained token with <code>Contents: Read and write</code>).</li>
-        <li>Paste the token below. It will be stored safely in your device's browser only.</li>
-      </ol>
 
       <div class="form-group">
         <label for="cfgUsername">GitHub Username / Owner *</label>

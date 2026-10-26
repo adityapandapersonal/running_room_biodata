@@ -254,12 +254,96 @@ async function generateOfficialVectorPdf(p, id) {
 
   // 4. Structured Official Particulars Table
   const tableX = m + 2;
-  let startY = m + 31;
   const tableW = cw - 4; // 190mm
+  let startY = m + 31;
+
+  // Top Section: First 5 rows alongside Passport Photo
+  // Photo Dimensions (Indian Official Railway Biodata Standard)
+  const photoW = 38; // 38mm
+  const photoH = 43; // 43mm
+  const photoX = tableX + tableW - photoW; // 162mm
+  const photoY = startY;
+
+  // Outer Photo Frame Box
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.3);
+  doc.setFillColor(248, 250, 252);
+  doc.rect(photoX, photoY, photoW, photoH, "FD");
+
+  // Load and embed employee photo
+  const avatarEl = document.getElementById("profileAvatar");
+  const photoDataUrl = await getImgDataUrl(avatarEl, p.photo);
+  if (photoDataUrl) {
+    try {
+      doc.addImage(photoDataUrl, "PNG", photoX + 1, photoY + 1, photoW - 2, photoH - 6.5);
+    } catch (e) {
+      console.warn("Could not embed photo into PDF:", e);
+      doc.setTextColor(148, 163, 184);
+      doc.setFontSize(7.5);
+      doc.text("Passport Photo", photoX + (photoW / 2), photoY + (photoH / 2) - 2, { align: "center" });
+    }
+  } else {
+    doc.setTextColor(148, 163, 184);
+    doc.setFontSize(7.5);
+    doc.text("Passport Photo", photoX + (photoW / 2), photoY + (photoH / 2) - 2, { align: "center" });
+  }
+
+  // Photo bottom label
+  doc.setFillColor(241, 245, 249);
+  doc.setDrawColor(203, 213, 225);
+  doc.rect(photoX, photoY + photoH - 5.5, photoW, 5.5, "FD");
+  doc.setTextColor(71, 85, 105);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(6.5);
+  doc.text("EMPLOYEE PHOTO", photoX + (photoW / 2), photoY + photoH - 1.8, { align: "center" });
+
+  // Rows 1-5 Left of Photo: Total width = tableW - photoW = 190 - 38 = 152mm
+  const sideW = tableW - photoW; // 152mm
+  const sideColL = 38; // Label width 38mm
+  const sideColV = sideW - sideColL; // Value width 114mm
+  const sideRowH = photoH / 5; // 8.6mm per row exactly!
+
+  function drawSideRow(label, val) {
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.2);
+
+    // Label
+    doc.setFillColor(248, 250, 252);
+    doc.rect(tableX, startY, sideColL, sideRowH, "FD");
+    doc.setTextColor(71, 85, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text(label, tableX + 2, startY + (sideRowH / 2) + 1.2);
+
+    // Value
+    doc.setFillColor(255, 255, 255);
+    doc.rect(tableX + sideColL, startY, sideColV, sideRowH, "FD");
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(String(val || "-"), tableX + sideColL + 2.5, startY + (sideRowH / 2) + 1.2);
+
+    startY += sideRowH;
+  }
+
+  // Draw 5 rows beside the photo
+  const age = calculateAge(p.dob);
+  const dobText = p.dob ? `${formatDateDisplay(p.dob)}${age ? ` (Age: ${age} Yrs)` : ""}` : "-";
+
+  drawSideRow("ID CARD NO. :-", p.idCardNo || p.id || "-");
+  drawSideRow("Full Name :-", p.fullName || "-");
+  drawSideRow("Designation :-", p.designation || "-");
+  drawSideRow("Date of Birth :-", dobText);
+  drawSideRow("Gender & Blood :-", `${p.gender || "-"}  |  Blood Group: ${p.bloodGroup || "-"}`);
+
+  // Now startY is at photoY + photoH!
+  startY = photoY + photoH;
+
+  // Full-width 4-column rows (36 + 59 + 36 + 59 = 190mm)
   const colL1 = 36;
   const colV1 = 59;
   const colL2 = 36;
-  const colV2 = 59; // 36 + 59 + 36 + 59 = 190mm exactly
+  const colV2 = 59;
 
   function drawRow(label1, val1, label2, val2, height = 7.5) {
     doc.setDrawColor(203, 213, 225);
@@ -325,17 +409,11 @@ async function generateOfficialVectorPdf(p, id) {
     startY += height;
   }
 
-  // Draw official Running Room particulars
-  const age = calculateAge(p.dob);
-  const dobText = p.dob ? `${formatDateDisplay(p.dob)}${age ? ` (Age: ${age} Yrs)` : ""}` : "-";
-
-  drawRow("ID CARD NO. :-", p.idCardNo || p.id || "-", "Record Status :-", "VERIFIED & ACTIVE");
-  drawRow("Full Name :-", p.fullName || "-", "Designation :-", p.designation || "-");
+  // Draw remaining official particulars across 190mm full width
   drawRow("Father's Name :-", p.fatherName || "-", "Mother's Name :-", p.motherName || "-");
-  drawRow("Husband's Name :-", p.husbandName || (p.gender === "Female" ? "-" : "N/A"), "Date of Birth :-", dobText);
-  drawRow("Gender :-", p.gender || "-", "Marital Status :-", p.maritalStatus || "-");
-  drawRow("Blood Group :-", p.bloodGroup || "-", "Aadhaar Number :-", p.aadhaarNumber || "-");
-  drawRow("Mobile Number :-", p.mobileNumber || p.phone || "-", "Email ID :-", p.email || "-");
+  drawRow("Husband's Name :-", p.husbandName || (p.gender === "Female" ? "-" : "N/A"), "Marital Status :-", p.maritalStatus || "-");
+  drawRow("Aadhaar Number :-", p.aadhaarNumber || "-", "Mobile Number :-", p.mobileNumber || p.phone || "-");
+  drawRow("Email ID :-", p.email || "-", "Record Status :-", "VERIFIED & ACTIVE");
   drawFullRow("Residential Address :-", p.residentialAddress || p.address || "-", 10);
   drawRow("Police Verif. Done :-", formatDateDisplay(p.policeVerifDoneDate), "Police Verif. Due :-", formatDateDisplay(p.policeVerifDueDate));
   drawRow("Medical Exam Done :-", formatDateDisplay(p.medicalExamDoneDate), "Medical Exam Due :-", formatDateDisplay(p.medicalExamDueDate));
@@ -403,9 +481,9 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setFontSize(9);
   doc.text("Signature of Employee :-", tableX + 101, bottomBoxY + 7);
 
-  // Embed Signature Image if present on page
+  // Embed Signature Image if present on page or in profile
   const sigImgEl = document.getElementById("profileSignature");
-  const sigDataUrl = getImgDataUrl(sigImgEl);
+  const sigDataUrl = await getImgDataUrl(sigImgEl, p.signature);
   if (sigDataUrl) {
     try {
       doc.addImage(sigDataUrl, "PNG", tableX + 118, bottomBoxY + 13, 50, 18);
@@ -466,16 +544,83 @@ function generateQrDataUrl(text) {
   }
 }
 
-function getImgDataUrl(imgEl) {
-  if (!imgEl) return null;
-  if (imgEl.src && imgEl.src.startsWith("data:")) return imgEl.src;
+async function getImgDataUrl(imgEl, fallbackUrl) {
+  // If element already loaded and naturalWidth > 0
+  if (imgEl && imgEl.complete && imgEl.naturalWidth > 0) {
+    try {
+      const c = document.createElement("canvas");
+      c.width = imgEl.naturalWidth;
+      c.height = imgEl.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(imgEl, 0, 0);
+      const data = c.toDataURL("image/png");
+      if (data && data.length > 100) return data;
+    } catch (e) {
+      console.warn("Canvas direct export failed (CORS):", e);
+    }
+  }
+
+  // If imgEl has data URL src
+  if (imgEl && imgEl.src && imgEl.src.startsWith("data:")) {
+    return imgEl.src;
+  }
+
+  const targetSrc = (imgEl && imgEl.src) ? imgEl.src : fallbackUrl;
+  if (!targetSrc) return null;
+  if (targetSrc.startsWith("data:")) return targetSrc;
+
+  // Try creating an offscreen Image with crossOrigin = "anonymous"
   try {
-    const c = document.createElement("canvas");
-    c.width = imgEl.naturalWidth || imgEl.width || 200;
-    c.height = imgEl.naturalHeight || imgEl.height || 80;
-    const ctx = c.getContext("2d");
-    ctx.drawImage(imgEl, 0, 0, c.width, c.height);
-    return c.toDataURL("image/png");
+    const loadedDataUrl = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const c = document.createElement("canvas");
+          c.width = img.naturalWidth || 300;
+          c.height = img.naturalHeight || 300;
+          const ctx = c.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          resolve(c.toDataURL("image/png"));
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = reject;
+      img.src = targetSrc;
+    });
+    if (loadedDataUrl) return loadedDataUrl;
+  } catch (e) {
+    // Continue to fetch fallback
+  }
+
+  // Try fetch -> blob -> FileReader -> Canvas
+  try {
+    const res = await fetch(targetSrc);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const tempImg = new Image();
+        tempImg.onload = () => {
+          try {
+            const c = document.createElement("canvas");
+            c.width = tempImg.naturalWidth || 300;
+            c.height = tempImg.naturalHeight || 300;
+            const ctx = c.getContext("2d");
+            ctx.drawImage(tempImg, 0, 0);
+            resolve(c.toDataURL("image/png"));
+          } catch (err) {
+            resolve(reader.result);
+          }
+        };
+        tempImg.onerror = () => resolve(reader.result);
+        tempImg.src = reader.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
   } catch (e) {
     return null;
   }
