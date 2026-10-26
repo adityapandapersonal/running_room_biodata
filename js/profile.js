@@ -665,20 +665,26 @@ function escapeHtml(str) {
 }
 
 function showErrorState(id, message) {
+  document.title = "Record Not Found / Deleted - Running Room Biodata";
   const container = document.querySelector(".profile-container");
   if (container) {
     container.innerHTML = `
-      <div class="glass-panel" style="padding: 40px; text-align: center; margin-top: 60px;">
-        <div style="font-size: 3rem; margin-bottom: 16px;">🔍</div>
-        <h2 style="margin-bottom: 8px;">Record Not Found</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 20px;">
-          No Running Room Biodata found for ID: <code>${escapeHtml(id)}</code>.
+      <div class="glass-panel" style="padding: 48px 24px; text-align: center; margin: 40px auto; max-width: 560px; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(15, 23, 42, 0.95); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); border-radius: 16px;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 20px auto;">
+          🗑️
+        </div>
+        <div style="display: inline-block; padding: 4px 14px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.5); color: #f87171; border-radius: 9999px; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px;">
+          Record Inactive / Deleted
+        </div>
+        <h2 style="font-size: 1.6rem; margin-bottom: 10px; color: #ffffff;">Record Not Found</h2>
+        <p style="color: #cbd5e1; font-size: 0.98rem; line-height: 1.6; margin-bottom: 12px;">
+          The employee biodata for ID <code style="background: rgba(255, 255, 255, 0.1); padding: 2px 8px; border-radius: 4px; color: #fca5a5; font-weight: 600;">${escapeHtml(id)}</code> has been permanently removed or does not exist.
         </p>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px;">
-          ${escapeHtml(message || "")}
+        <p style="color: #94a3b8; font-size: 0.84rem; margin-bottom: 26px;">
+          Yeh record repository se delete kar diya gaya hai. Is QR code ka link aab invalid ho chuka hai.
         </p>
-        <a href="admin.html" class="btn btn-primary">
-          ⚙️ Open Admin Studio to Add Record
+        <a href="admin.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; border-radius: 8px;">
+          ⚙️ Open Admin Panel
         </a>
       </div>
     `;

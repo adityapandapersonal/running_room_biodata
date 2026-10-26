@@ -433,12 +433,73 @@ class GitHubClient {
   }
 
   /**
-   * Delete complete biodata profile JSON and remove from registry.json
+   * Delete complete biodata profile: photo, signature, JSON, registry entry, and local cache
    */
   async deleteProfile(personId) {
     if (!personId) throw new Error("Person ID is required for deletion.");
 
-    // 1. Delete data/profiles/${personId}.json
+    // Helper to identify default assets that must never be deleted
+    const isDefaultAsset = (p) => {
+      if (!p) return true;
+      const lower = p.toLowerCase();
+      return (
+        lower.includes("demo-aditya") ||
+        lower.includes("sample-signature") ||
+        lower.startsWith("data:")
+      );
+    };
+
+    // 0. Inspect profile JSON first to find exact custom photo & signature paths
+    let photoToDelete = null;
+    let signatureToDelete = null;
+    try {
+      const profile = await this.getProfileById(personId).catch(() => null);
+      if (profile) {
+        photoToDelete = profile.photo;
+        signatureToDelete = profile.signature;
+      }
+    } catch (_) {}
+
+    // 1. Delete associated employee photo from GitHub
+    if (photoToDelete && !isDefaultAsset(photoToDelete)) {
+      await this.deleteFile(
+        photoToDelete,
+        `Delete employee photo for ${personId}`
+      ).catch((err) => console.warn("Could not delete photo:", err));
+    }
+
+    // Also clean residual photo files for this person
+    const photoExts = ["jpg", "jpeg", "png", "webp"];
+    for (const ext of photoExts) {
+      const candidate = `assets/photos/${personId}.${ext}`;
+      if (candidate !== photoToDelete) {
+        await this.deleteFile(
+          candidate,
+          `Clean residual photo for ${personId}`
+        ).catch(() => null);
+      }
+    }
+
+    // 2. Delete associated employee signature from GitHub (if custom)
+    if (signatureToDelete && !isDefaultAsset(signatureToDelete)) {
+      await this.deleteFile(
+        signatureToDelete,
+        `Delete employee signature for ${personId}`
+      ).catch((err) => console.warn("Could not delete signature:", err));
+    }
+
+    const sigExts = ["png", "jpg", "jpeg", "svg"];
+    for (const ext of sigExts) {
+      const candidate = `assets/signatures/${personId}.${ext}`;
+      if (candidate !== signatureToDelete && !isDefaultAsset(candidate)) {
+        await this.deleteFile(
+          candidate,
+          `Clean residual signature for ${personId}`
+        ).catch(() => null);
+      }
+    }
+
+    // 3. Delete data/profiles/${personId}.json
     const profilePath = `data/profiles/${personId}.json`;
     await this.deleteFile(
       profilePath,
@@ -447,7 +508,7 @@ class GitHubClient {
       console.warn("Could not delete profile JSON (maybe already deleted):", err);
     });
 
-    // 2. Remove entry from data/registry.json
+    // 4. Remove entry from data/registry.json
     const registryPath = "data/registry.json";
     try {
       const existing = await this.getFile(registryPath);
@@ -470,13 +531,14 @@ class GitHubClient {
       console.warn("Could not update registry upon deletion:", e);
     }
 
-    // 3. Clear from memory cache and localStorage
+    // 5. Clear from memory cache and mark deleted in localStorage
     if (this._profileCache) {
       this._profileCache.delete(personId);
     }
     try {
       localStorage.removeItem(`rr_profile_${personId}`);
       localStorage.removeItem(`rr_profile_time_${personId}`);
+      localStorage.setItem(`rr_deleted_${personId}`, "true");
     } catch (_) {}
 
     return { success: true, id: personId };
@@ -561,25 +623,21 @@ class GitHubClient {
     const cleanId = (id || "").trim();
     if (!cleanId) throw new Error("No profile ID specified.");
 
-    // 0. Memory Cache (0ms Instant Load)
+    // Check if explicitly marked as deleted in this browser session
+    try {
+      if (localStorage.getItem(`rr_deleted_${cleanId}`) === "true") {
+        throw new Error(`Profile with ID '${cleanId}' has been deleted.`);
+      }
+    } catch (e) {
+      if (e.message && e.message.includes("deleted")) throw e;
+    }
+
+    // 0. Memory Cache (0ms Instant Load, only if active)
     if (!this._profileCache) this._profileCache = new Map();
     if (this._profileCache.has(cleanId)) {
       console.log(`[GitHubClient] Loaded profile '${cleanId}' from memory cache.`);
       return this._profileCache.get(cleanId);
     }
-
-    // 0b. LocalStorage Cache (Instant across tab navigations)
-    try {
-      const localData = localStorage.getItem(`rr_profile_${cleanId}`);
-      if (localData) {
-        const parsed = JSON.parse(localData);
-        if (parsed && (parsed.id === cleanId || parsed.fullName)) {
-          console.log(`[GitHubClient] Loaded profile '${cleanId}' from localStorage.`);
-          this._profileCache.set(cleanId, parsed);
-          return parsed;
-        }
-      }
-    } catch (_) {}
 
     const safeFile = `data/profiles/${cleanId}.json`;
 
@@ -596,8 +654,16 @@ class GitHubClient {
           } catch (_) {}
           console.log(`[GitHubClient] Loaded profile '${cleanId}' real-time from GitHub REST API.`);
           return profile;
+        } else if (file === null) {
+          // File is confirmed 404 / deleted on GitHub!
+          try {
+            localStorage.removeItem(`rr_profile_${cleanId}`);
+            localStorage.setItem(`rr_deleted_${cleanId}`, "true");
+          } catch (_) {}
+          throw new Error(`Profile '${cleanId}' has been deleted from repository.`);
         }
       } catch (e) {
+        if (e.message && e.message.includes("deleted")) throw e;
         console.warn("API profile fetch failed, trying fallbacks:", e);
       }
     }
@@ -699,7 +765,14 @@ class GitHubClient {
       console.warn("Registry fallback also failed:", regErr);
     }
 
-    throw new Error(`Profile with ID '${cleanId}' could not be loaded from GitHub.`);
+    // If reached here: the record is confirmed 404 / deleted on GitHub and absent from registry!
+    // Clean up any stale localStorage entry immediately so it never shows again!
+    try {
+      localStorage.removeItem(`rr_profile_${cleanId}`);
+      localStorage.setItem(`rr_deleted_${cleanId}`, "true");
+    } catch (_) {}
+
+    throw new Error(`Profile with ID '${cleanId}' does not exist or has been deleted.`);
   }
 }
 
