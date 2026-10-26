@@ -1,3 +1,9 @@
-# Secret tokens and local text files
+# Environment variables & secrets
+.env
+.env.*
+*.env
 api.txt
+
+# Logs & temp files
 *.log
+.vscode/
