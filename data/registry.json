@@ -19,6 +19,16 @@
       "photo": "assets/photos/ShivKumarSingh.jpeg",
       "signature": "assets/signatures/ShivKumarSingh.jpeg",
       "updatedAt": "2026-10-27"
+    },
+    {
+      "id": "MohammadSaleem",
+      "idCardNo": "RR/DGG/11491823",
+      "fullName": "MOHAMMAD SALEEM",
+      "designation": "Asst. Supervisor",
+      "phone": "9598935555",
+      "photo": "assets/photos/MohammadSaleem.jpeg",
+      "signature": "assets/signatures/MohammadSaleem.jpeg",
+      "updatedAt": "2026-10-27"
     }
   ]
 }
