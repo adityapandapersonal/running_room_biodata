@@ -474,31 +474,36 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setDrawColor(16, 185, 129);
   doc.setLineWidth(0.4);
   doc.setFillColor(240, 253, 244);
-  doc.roundedRect(tableX, bottomBoxY, 92, boxH, 2, 2, "FD");
+  doc.roundedRect(tableX, bottomBoxY, 93, boxH, 2, 2, "FD");
+
+  const leftTextX = tableX + 4.5;
+  const maxAttestW = 61; // Safe boundary before QR code at tableX + 68
 
   doc.setTextColor(5, 150, 105);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9.5);
-  doc.text("DGG Running Room Verified Detailed", tableX + 5, bottomBoxY + 8);
+  doc.text("DGG Running Room Verified Detailed", leftTextX, bottomBoxY + 7.5);
 
   doc.setTextColor(71, 85, 105);
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.text("Official Attestation & Digital Registry Record", tableX + 5, bottomBoxY + 14);
-  doc.text("This biodata record has been officially verified and", tableX + 5, bottomBoxY + 20);
-  doc.text("digitally registered in the Running Room Employee System.", tableX + 5, bottomBoxY + 24);
-  doc.text("SECR Dongargarh (Railway Administration)", tableX + 5, bottomBoxY + 30);
-  doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, tableX + 5, bottomBoxY + 38);
+  doc.setFontSize(7.2);
+  doc.text("Official Attestation & Digital Registry Record", leftTextX, bottomBoxY + 13, { maxWidth: maxAttestW });
+  doc.text("This biodata record has been officially verified and", leftTextX, bottomBoxY + 18.5, { maxWidth: maxAttestW });
+  doc.text("registered in Running Room System.", leftTextX, bottomBoxY + 23, { maxWidth: maxAttestW });
+  doc.text("SECR Dongargarh (Railway Administration)", leftTextX, bottomBoxY + 28, { maxWidth: maxAttestW });
+  doc.setFont("helvetica", "bold");
+  doc.text(`Generated: ${new Date().toLocaleDateString("en-GB")}`, leftTextX, bottomBoxY + 38);
 
   // Embed Live QR Code
   const permalink = `${window.APP_CONFIG.getBaseUrl()}?id=${encodeURIComponent(p.id || id || "employee")}`;
   const qrDataUrl = generateQrDataUrl(permalink);
   if (qrDataUrl) {
     try {
-      doc.addImage(qrDataUrl, "PNG", tableX + 66, bottomBoxY + 18, 22, 22);
+      doc.addImage(qrDataUrl, "PNG", tableX + 68, bottomBoxY + 16, 21, 21);
       doc.setFontSize(6.5);
+      doc.setFont("helvetica", "bold");
       doc.setTextColor(100, 116, 139);
-      doc.text("Scan to Verify", tableX + 77, bottomBoxY + 43, { align: "center" });
+      doc.text("Scan to Verify", tableX + 78.5, bottomBoxY + 41, { align: "center" });
     } catch (e) {
       console.warn("Could not embed QR into PDF:", e);
     }
