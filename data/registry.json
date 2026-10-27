@@ -59,6 +59,16 @@
       "photo": "assets/photos/NemDas.jpeg",
       "signature": "assets/signatures/NemDas.jpeg",
       "updatedAt": "2026-10-27"
+    },
+    {
+      "id": "ShivendraRamteke",
+      "idCardNo": "RR/DGG/10127131",
+      "fullName": "SHIVENDRA RAMTEKE",
+      "designation": "BEARER",
+      "phone": "9630014217",
+      "photo": "assets/photos/ShivendraRamteke.jpeg",
+      "signature": "assets/signatures/ShivendraRamteke.jpeg",
+      "updatedAt": "2026-10-27"
     }
   ]
 }
