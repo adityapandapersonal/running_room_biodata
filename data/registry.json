@@ -39,6 +39,16 @@
       "photo": "assets/photos/SandeepYadav.jpeg",
       "signature": "assets/signatures/SandeepYadav.jpeg",
       "updatedAt": "2026-10-27"
+    },
+    {
+      "id": "HirendraKumarDevdas",
+      "idCardNo": "RR/DGG/10469488",
+      "fullName": "HIRENDRA KUMAR DEVDAS",
+      "designation": "BEARER",
+      "phone": "9644779021",
+      "photo": "assets/photos/demo-aditya.svg",
+      "signature": "assets/signatures/sample-signature.svg",
+      "updatedAt": "2026-10-27"
     }
   ]
 }
