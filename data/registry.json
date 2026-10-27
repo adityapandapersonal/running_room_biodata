@@ -9,6 +9,16 @@
       "photo": "assets/photos/Sheshu-Dev-Panda.jpg",
       "signature": "assets/signatures/sample-signature.svg",
       "updatedAt": "2026-10-26"
+    },
+    {
+      "id": "ShivKumarSingh",
+      "idCardNo": "RR/DGG/11428447",
+      "fullName": "SHIV KUMAR SINGH",
+      "designation": "Supervisor (Skilled)",
+      "phone": "8585981866",
+      "photo": "assets/photos/ShivKumarSingh.jpeg",
+      "signature": "assets/signatures/ShivKumarSingh.jpeg",
+      "updatedAt": "2026-10-27"
     }
   ]
 }
