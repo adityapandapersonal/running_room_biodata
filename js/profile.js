@@ -268,19 +268,19 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
-  doc.text("SOUTH EAST CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
+  doc.text("SOUTH EASTERN CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
   doc.setFontSize(13);
   doc.setTextColor(56, 189, 248); // Cyan
-  doc.text("RUNNING ROOM, DONGARGARH", pw / 2, m + 14, { align: "center" });
+  doc.text("RUNNING ROOM DONGARGARH", pw / 2, m + 14, { align: "center" });
 
   // 3. Document Title Bar
   doc.setFillColor(241, 245, 249);
   doc.setDrawColor(203, 213, 225);
   doc.rect(m + 2, m + 21, cw - 4, 8, "FD");
   doc.setTextColor(15, 23, 42);
-  doc.setFontSize(11);
+  doc.setFontSize(10.5);
   doc.setFont("helvetica", "bold");
-  doc.text("CONTRACTOR’S STAFF BIO DATA SHEET", pw / 2, m + 26.5, { align: "center" });
+  doc.text("M/s DREAMZ INDIA HOSPITALITY, New Delhi", pw / 2, m + 26.5, { align: "center" });
 
   // 4. Structured Official Particulars Table
   const tableX = m + 2;
@@ -539,7 +539,7 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setTextColor(148, 163, 184);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.text("Official Document - Running Room Dongargarh (SECR) | CONTRACTOR’S STAFF BIO DATA SHEET", pw / 2, ph - 4, { align: "center" });
+  doc.text("Official Document - Running Room Dongargarh (SECR) | M/s DREAMZ INDIA HOSPITALITY, New Delhi", pw / 2, ph - 4, { align: "center" });
 
   // 7. Save File Directly
   const rawName = p.fullName || "Employee";
