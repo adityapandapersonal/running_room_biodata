@@ -49,6 +49,16 @@
       "photo": "assets/photos/HirendraKumarDevdas.jpeg",
       "signature": "assets/signatures/HirendraKumarDevdas.jpeg",
       "updatedAt": "2026-10-27"
+    },
+    {
+      "id": "NemDas",
+      "idCardNo": "RR/DGG/10466753",
+      "fullName": "NEM DAS",
+      "designation": "BEARER",
+      "phone": "8815213421",
+      "photo": "assets/photos/NemDas.jpeg",
+      "signature": "assets/signatures/NemDas.jpeg",
+      "updatedAt": "2026-10-27"
     }
   ]
 }
