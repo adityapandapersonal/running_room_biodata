@@ -21,73 +21,137 @@
   box-shadow: var(--shadow-xl), var(--shadow-glow);
 }
 
-/* Top Banner with subtle pattern and official heading */
+/* ==========================================================================
+   Executive Railway Profile Banner (Deep Sapphire & Royal Gold Aura)
+   ========================================================================== */
 .profile-banner {
-  min-height: 154px;
-  background: var(--accent-gradient);
+  min-height: 168px;
+  background: linear-gradient(135deg, #050c1b 0%, #0c1a32 35%, #102a4e 70%, #083c54 100%);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 13px 18px 0 18px;
+  padding: 16px 20px 0 20px;
   text-align: center;
+  box-shadow: inset 0 -24px 32px rgba(10, 14, 23, 0.7);
+}
+
+/* Subtle Technical Grid & Ambient Lighting */
+.banner-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(6, 182, 212, 0.28) 0%, transparent 50%),
+    radial-gradient(circle at 85% 25%, rgba(245, 158, 11, 0.22) 0%, transparent 45%),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+  pointer-events: none;
 }
 
 .profile-banner::after {
   content: "";
   position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.28) 0%, transparent 60%);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55px;
+  background: linear-gradient(to bottom, transparent, rgba(10, 14, 23, 0.85));
   pointer-events: none;
 }
 
-.banner-railway-title {
+/* 1. Official SECR Railway Pill */
+.banner-railway-pill {
   position: relative;
   z-index: 2;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fde68a;
   text-transform: uppercase;
-  background: rgba(0, 0, 0, 0.24);
-  padding: 2.5px 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(6, 182, 212, 0.12) 100%);
+  padding: 4px 16px;
   border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  display: inline-block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  margin-bottom: 3px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  margin-bottom: 5px;
 }
 
-.banner-top-title {
+.railway-crest-icon {
+  color: #fbbf24;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+/* 2. Station Header with Decorative Wings */
+.banner-station-row {
   position: relative;
   z-index: 2;
-  font-size: 1.08rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 2px 0 6px 0;
+  width: 100%;
+}
+
+.station-wing {
+  height: 1.5px;
+  width: 36px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.65));
+}
+
+.station-wing.right {
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.65), transparent);
+}
+
+.banner-station-title {
+  font-size: 1.22rem;
   font-weight: 900;
   letter-spacing: 0.08em;
   color: #ffffff;
   text-transform: uppercase;
-  margin: 1px 0 2px 0;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7), 0 0 24px rgba(56, 189, 248, 0.4);
+  line-height: 1.2;
 }
 
-.banner-sub-title {
+/* 3. Hospitality Contractor Capsule */
+.banner-contractor-pill {
   position: relative;
   z-index: 2;
-  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  color: #e0f2fe;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 9999px;
+  padding: 3.5px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.contractor-star {
+  color: #38bdf8;
+  font-size: 0.7rem;
 }
 
 /* Header Content with Avatar */
 .profile-header {
   position: relative;
   padding: 0 28px 24px 28px;
-  margin-top: -52px;
+  margin-top: -50px;
   text-align: center;
 }
 
@@ -98,8 +162,8 @@
   margin: 0 auto 16px auto;
   border-radius: 50%;
   padding: 4px;
-  background: var(--accent-gradient);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), var(--shadow-glow);
+  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #f59e0b 100%);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65), 0 0 24px rgba(6, 182, 212, 0.35);
 }
 
 .avatar-img {
@@ -542,23 +606,27 @@
 
 @media (max-width: 640px) {
   .profile-banner {
-    min-height: 156px;
-    padding: 12px 10px 0 10px;
+    min-height: 168px;
+    padding: 13px 12px 0 12px;
   }
-  .banner-railway-title {
-    font-size: 0.65rem;
-    padding: 2px 10px;
+  .banner-railway-pill {
+    font-size: 0.66rem;
+    padding: 3px 12px;
+    letter-spacing: 0.08em;
+  }
+  .station-wing {
+    width: 20px;
+  }
+  .banner-station-title {
+    font-size: 1.02rem;
     letter-spacing: 0.05em;
   }
-  .banner-top-title {
-    font-size: 0.96rem;
-    letter-spacing: 0.05em;
-  }
-  .banner-sub-title {
-    font-size: 0.74rem;
+  .banner-contractor-pill {
+    font-size: 0.72rem;
+    padding: 3px 12px;
   }
   .profile-header {
-    margin-top: -50px;
+    margin-top: -46px;
   }
   .rr-biodata-row {
     flex-direction: column;
