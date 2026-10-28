@@ -69,6 +69,16 @@
       "photo": "assets/photos/ShivendraRamteke.jpeg",
       "signature": "assets/signatures/ShivendraRamteke.jpeg",
       "updatedAt": "2026-10-27"
+    },
+    {
+      "id": "SatishKumar",
+      "idCardNo": "RR/DGG/10569359",
+      "fullName": "SATISH KUMAR",
+      "designation": "BEARER",
+      "phone": "9399233950",
+      "photo": "assets/photos/SatishKumar.jpeg",
+      "signature": "assets/signatures/SatishKumar.jpeg",
+      "updatedAt": "2026-10-28"
     }
   ]
 }
