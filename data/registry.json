@@ -79,6 +79,16 @@
       "photo": "assets/photos/SatishKumar.jpeg",
       "signature": "assets/signatures/SatishKumar.jpeg",
       "updatedAt": "2026-10-28"
+    },
+    {
+      "id": "GeetanshuBorkar",
+      "idCardNo": "RR/DGG/11428449",
+      "fullName": "GEETANSHU BORKAR",
+      "designation": "Data Entry Operator (D.E.O.)",
+      "phone": "6263494575",
+      "photo": "assets/photos/GeetanshuBorkar.jpeg",
+      "signature": "assets/signatures/GeetanshuBorkar.jpeg",
+      "updatedAt": "2026-10-28"
     }
   ]
 }
