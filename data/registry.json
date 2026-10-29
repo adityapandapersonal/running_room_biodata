@@ -89,6 +89,16 @@
       "photo": "assets/photos/GeetanshuBorkar.jpeg",
       "signature": "assets/signatures/GeetanshuBorkar.jpeg",
       "updatedAt": "2026-10-28"
+    },
+    {
+      "id": "kamleshkumarpatel",
+      "idCardNo": "RR/DGG/11428458",
+      "fullName": "KAMLESH KUMAR PATEL",
+      "designation": "Data Entry Operator (D.E.O.)",
+      "phone": "6266352812",
+      "photo": "assets/photos/kamleshkumarpatel.jpeg",
+      "signature": "assets/signatures/kamleshkumarpatel.jpeg",
+      "updatedAt": "2026-10-29"
     }
   ]
 }
