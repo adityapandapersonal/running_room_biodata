@@ -99,6 +99,16 @@
       "photo": "assets/photos/kamleshkumarpatel.jpeg",
       "signature": "assets/signatures/kamleshkumarpatel.jpeg",
       "updatedAt": "2026-10-29"
+    },
+    {
+      "id": "Vinayaksahare",
+      "idCardNo": "RR/DGG/11428497",
+      "fullName": "VINAYAK SAHARE",
+      "designation": "BEARER",
+      "phone": "9685539940",
+      "photo": "assets/photos/Vinayaksahare.jpeg",
+      "signature": "assets/signatures/Vinayaksahare.jpeg",
+      "updatedAt": "2026-10-29"
     }
   ]
 }
