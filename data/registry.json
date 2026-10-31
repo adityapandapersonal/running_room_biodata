@@ -159,6 +159,16 @@
       "photo": "assets/photos/Manjushyamkuvar.jpeg",
       "signature": "assets/signatures/Manjushyamkuvar.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Manoramameshram",
+      "idCardNo": "RR/DGG/1104",
+      "fullName": "MANORAMA MESHRAM",
+      "designation": "MAID",
+      "phone": "7440262170",
+      "photo": "assets/photos/Manoramameshram.jpeg",
+      "signature": "assets/signatures/Manoramameshram.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
