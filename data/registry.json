@@ -109,6 +109,16 @@
       "photo": "assets/photos/Vinayaksahare.jpeg",
       "signature": "assets/signatures/Vinayaksahare.jpeg",
       "updatedAt": "2026-10-29"
+    },
+    {
+      "id": "Sandeepyadav-1",
+      "idCardNo": "RR/DGG/10466722",
+      "fullName": "SANDEEP YADAV- I",
+      "designation": "BEARER",
+      "phone": "7773804452",
+      "photo": "assets/photos/Sandeepyadav-1.jpeg",
+      "signature": "assets/signatures/Sandeepyadav-1.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
