@@ -169,6 +169,16 @@
       "photo": "assets/photos/Manoramameshram.jpeg",
       "signature": "assets/signatures/Manoramameshram.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Saritabaibaghel",
+      "idCardNo": "RR/DGG/11524502",
+      "fullName": "SARITA BAI BAGHEL",
+      "designation": "GARDENER",
+      "phone": "9669526906",
+      "photo": "assets/photos/Saritabaibaghel.jpeg",
+      "signature": "assets/signatures/Saritabaibaghel.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
