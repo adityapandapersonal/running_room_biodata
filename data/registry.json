@@ -139,6 +139,16 @@
       "photo": "assets/photos/Tarannumbegamkhan.jpeg",
       "signature": "assets/signatures/Tarannumbegamkhan.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Manjuyadav",
+      "idCardNo": "RR/DGG/1102",
+      "fullName": "MANJU YADAV",
+      "designation": "COOK",
+      "phone": "7748881742",
+      "photo": "assets/photos/Manjuyadav.jpeg",
+      "signature": "assets/signatures/Manjuyadav.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
