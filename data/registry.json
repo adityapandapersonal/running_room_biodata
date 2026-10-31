@@ -209,6 +209,16 @@
       "photo": "assets/photos/Durgabaijanbandhu.jpeg",
       "signature": "assets/signatures/Durgabaijanbandhu.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Sushmasakhare",
+      "idCardNo": "RR/DGG/11713607",
+      "fullName": "SUSHMA SAKHARE",
+      "designation": "MAID",
+      "phone": "9098818300",
+      "photo": "assets/photos/Sushmasakhare.jpeg",
+      "signature": "assets/signatures/Sushmasakhare.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
