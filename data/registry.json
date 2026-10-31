@@ -129,6 +129,16 @@
       "photo": "assets/photos/Sohebkhan.jpeg",
       "signature": "assets/signatures/Sohebkhan.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Tarannumbegamkhan",
+      "idCardNo": "RR/DGG/1101",
+      "fullName": "TARANNUM BEGAM KHAN",
+      "designation": "COOK",
+      "phone": "8889757383",
+      "photo": "assets/photos/Tarannumbegamkhan.jpeg",
+      "signature": "assets/signatures/Tarannumbegamkhan.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
