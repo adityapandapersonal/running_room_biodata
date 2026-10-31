@@ -199,6 +199,16 @@
       "photo": "assets/photos/Suryakantalautre.jpeg",
       "signature": "assets/signatures/Suryakantalautre.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Durgabaijanbandhu",
+      "idCardNo": "RR/DGG/10127125",
+      "fullName": "DURGA BAI JANBANDHU",
+      "designation": "SERVING BEARER",
+      "phone": "9074630784",
+      "photo": "assets/photos/Durgabaijanbandhu.jpeg",
+      "signature": "assets/signatures/Durgabaijanbandhu.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
