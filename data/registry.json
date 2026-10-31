@@ -219,6 +219,16 @@
       "photo": "assets/photos/Sushmasakhare.jpeg",
       "signature": "assets/signatures/Sushmasakhare.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Meenasahu",
+      "idCardNo": "RR/DGG/10135479",
+      "fullName": "MEENA SAHU",
+      "designation": "SERVING BEARER",
+      "phone": "9685089047",
+      "photo": "assets/photos/Meenasahu.jpeg",
+      "signature": "assets/signatures/Meenasahu.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
