@@ -179,6 +179,16 @@
       "photo": "assets/photos/Saritabaibaghel.jpeg",
       "signature": "assets/signatures/Saritabaibaghel.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Sushiladeshmukh",
+      "idCardNo": "RR/DGG/11491817",
+      "fullName": "SUSHILA DESHMUKH",
+      "designation": "ASST. COOK",
+      "phone": "6263263342",
+      "photo": "assets/photos/Sushiladeshmukh.jpeg",
+      "signature": "assets/signatures/Sushiladeshmukh.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
