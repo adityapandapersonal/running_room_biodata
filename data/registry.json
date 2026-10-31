@@ -189,6 +189,16 @@
       "photo": "assets/photos/Sushiladeshmukh.jpeg",
       "signature": "assets/signatures/Sushiladeshmukh.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Suryakantalautre",
+      "idCardNo": "RR/DGG/10469484",
+      "fullName": "SURYAKANTA LAUTRE",
+      "designation": "SERVING BEARER",
+      "phone": "7470481057",
+      "photo": "assets/photos/Suryakantalautre.jpeg",
+      "signature": "assets/signatures/Suryakantalautre.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
