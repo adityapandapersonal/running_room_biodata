@@ -149,6 +149,16 @@
       "photo": "assets/photos/Manjuyadav.jpeg",
       "signature": "assets/signatures/Manjuyadav.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Manjushyamkuvar",
+      "idCardNo": "RR/DGG/1103",
+      "fullName": "MANJU SHYAMKUVAR",
+      "designation": "COOK",
+      "phone": "7000310942",
+      "photo": "assets/photos/Manjushyamkuvar.jpeg",
+      "signature": "assets/signatures/Manjushyamkuvar.jpeg",
+      "updatedAt": "2026-10-31"
     }
   ]
 }
