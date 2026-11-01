@@ -239,6 +239,16 @@
       "photo": "assets/photos/Nikitadulani.jpeg",
       "signature": "assets/signatures/Nikitadulani.jpeg",
       "updatedAt": "2026-10-31"
+    },
+    {
+      "id": "Bhaveshsahu",
+      "idCardNo": "RR/DGG/1105",
+      "fullName": "BHAVESH SAHU",
+      "designation": "DATA ENTRY OPERATOR (D.E.O.)",
+      "phone": "6266293589",
+      "photo": "assets/photos/Bhaveshsahu.jpeg",
+      "signature": "assets/signatures/Bhaveshsahu.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
