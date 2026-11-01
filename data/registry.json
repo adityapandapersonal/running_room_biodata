@@ -319,6 +319,16 @@
       "photo": "assets/photos/Madhuridongre.jpeg",
       "signature": "assets/signatures/Madhuridongre.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Anildongre",
+      "idCardNo": "RR/DGG/1108",
+      "fullName": "ANIL DONGRE",
+      "designation": "ASST. COOK",
+      "phone": "7880011965",
+      "photo": "assets/photos/Anildongre.jpeg",
+      "signature": "assets/signatures/Anildongre.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
