@@ -259,6 +259,16 @@
       "photo": "assets/photos/Sohelkhan.jpeg",
       "signature": "assets/signatures/Sohelkhan.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Sahilsonvani",
+      "idCardNo": "RR/DGG/11491802",
+      "fullName": "SAHIL SONVANI",
+      "designation": "BEARER",
+      "phone": "7828140664",
+      "photo": "assets/photos/Sahilsonvani.jpeg",
+      "signature": "assets/signatures/Sahilsonvani.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
