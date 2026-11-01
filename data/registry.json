@@ -349,6 +349,16 @@
       "photo": "assets/photos/Kantabaiuke.jpeg",
       "signature": "assets/signatures/Kantabaiuke.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Vandanabadole",
+      "idCardNo": "RR/DGG/10466776",
+      "fullName": "VANDANA BADOLE",
+      "designation": "SERVING BEARER",
+      "phone": "6266294312",
+      "photo": "assets/photos/Vandanabadole.jpeg",
+      "signature": "assets/signatures/Vandanabadole.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
