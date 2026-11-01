@@ -309,6 +309,16 @@
       "photo": "assets/photos/Poonammeshram.jpeg",
       "signature": "assets/signatures/Poonammeshram.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Madhuridongre",
+      "idCardNo": "RR/DGG/1107",
+      "fullName": "MADHURI DONGRE",
+      "designation": "COOK",
+      "phone": "9406163796",
+      "photo": "assets/photos/Madhuridongre.jpeg",
+      "signature": "assets/signatures/Madhuridongre.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
