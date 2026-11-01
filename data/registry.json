@@ -279,6 +279,16 @@
       "photo": "assets/photos/Mayankyadav.jpeg",
       "signature": "assets/signatures/Mayankyadav.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Anitabaichurenra",
+      "idCardNo": "RR/DGG/10466749",
+      "fullName": "ANITA BAI CHURENDRA",
+      "designation": "ASST. COOK",
+      "phone": "6266473772",
+      "photo": "assets/photos/Anitabaichurenra.jpeg",
+      "signature": "assets/signatures/Anitabaichurenra.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
