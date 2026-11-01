@@ -329,6 +329,16 @@
       "photo": "assets/photos/Anildongre.jpeg",
       "signature": "assets/signatures/Anildongre.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Renuchouhan",
+      "idCardNo": "RR/DGG/10518275",
+      "fullName": "RENU CHOUHAN",
+      "designation": "ASST. COOK",
+      "phone": "7470919762",
+      "photo": "assets/photos/Renuchouhan.jpeg",
+      "signature": "assets/signatures/sample-signature.svg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
