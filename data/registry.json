@@ -249,6 +249,16 @@
       "photo": "assets/photos/Bhaveshsahu.jpeg",
       "signature": "assets/signatures/Bhaveshsahu.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Sohelkhan",
+      "idCardNo": "RR/DGG/11491808",
+      "fullName": "SOHEL KHAN",
+      "designation": "BEARER",
+      "phone": "9406163934",
+      "photo": "assets/photos/Sohelkhan.jpeg",
+      "signature": "assets/signatures/Sohelkhan.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
