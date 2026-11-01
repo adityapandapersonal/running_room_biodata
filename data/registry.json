@@ -289,6 +289,16 @@
       "photo": "assets/photos/Anitabaichurenra.jpeg",
       "signature": "assets/signatures/Anitabaichurenra.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Pushpendrakumar",
+      "idCardNo": "RR/DGG/1082330",
+      "fullName": "PUSHPENDRA KUMAR",
+      "designation": "SAFAIWALA",
+      "phone": "8253076531",
+      "photo": "assets/photos/Pushpendrakumar.jpeg",
+      "signature": "assets/signatures/Pushpendrakumar.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
