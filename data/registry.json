@@ -339,6 +339,16 @@
       "photo": "assets/photos/Renuchouhan.jpeg",
       "signature": "assets/signatures/Renuchouhan.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Kantabaiuke",
+      "idCardNo": "RR/DGG/11491819",
+      "fullName": "KANTA BAI UKE",
+      "designation": "SERVING BEARER",
+      "phone": "9343836482",
+      "photo": "assets/photos/Kantabaiuke.jpeg",
+      "signature": "assets/signatures/Kantabaiuke.jpeg",
+      "updatedAt": "2026-11-01"
     }
   ]
 }
