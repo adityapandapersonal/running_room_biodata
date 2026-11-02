@@ -379,6 +379,16 @@
       "photo": "assets/photos/Mamtapendre.jpeg",
       "signature": "assets/signatures/Mamtapendre.jpeg",
       "updatedAt": "2026-11-02"
+    },
+    {
+      "id": "Apranamanik",
+      "idCardNo": "RR/DGG/1109",
+      "fullName": "APRANA MANIK",
+      "designation": "ASST. COOK",
+      "phone": "6266432181",
+      "photo": "assets/photos/Apranamanik.jpeg",
+      "signature": "assets/signatures/Apranamanik.jpeg",
+      "updatedAt": "2026-11-02"
     }
   ]
 }
