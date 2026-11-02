@@ -359,6 +359,16 @@
       "photo": "assets/photos/Vandanabadole.jpeg",
       "signature": "assets/signatures/Vandanabadole.jpeg",
       "updatedAt": "2026-11-01"
+    },
+    {
+      "id": "Shahidabegam",
+      "idCardNo": "RR/DGG/1110",
+      "fullName": "SHAHIDA BEGUM",
+      "designation": "COOK",
+      "phone": "6265971150",
+      "photo": "assets/photos/Shahidabegam.jpeg",
+      "signature": "assets/signatures/Shahidabegam.jpeg",
+      "updatedAt": "2026-11-02"
     }
   ]
 }
