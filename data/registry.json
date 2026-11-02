@@ -369,6 +369,16 @@
       "photo": "assets/photos/Shahidabegam.jpeg",
       "signature": "assets/signatures/Shahidabegam.jpeg",
       "updatedAt": "2026-11-02"
+    },
+    {
+      "id": "Mamtapendre",
+      "idCardNo": "RR/DGG/11428525",
+      "fullName": "MAMTA PENDRE",
+      "designation": "SERVING BEARER",
+      "phone": "7869437136",
+      "photo": "assets/photos/Mamtapendre.jpeg",
+      "signature": "assets/signatures/Mamtapendre.jpeg",
+      "updatedAt": "2026-11-02"
     }
   ]
 }
