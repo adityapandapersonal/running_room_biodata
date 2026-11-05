@@ -268,7 +268,7 @@ async function generateOfficialVectorPdf(p, id) {
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10.5);
-  doc.text("SOUTH EASTERN CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
+  doc.text("SOUTH EAST CENTRAL RAILWAY (SECR)", pw / 2, m + 7, { align: "center" });
   doc.setFontSize(13);
   doc.setTextColor(56, 189, 248); // Cyan
   doc.text("RUNNING ROOM DONGARGARH", pw / 2, m + 14, { align: "center" });
